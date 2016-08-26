@@ -81,3 +81,24 @@ Use [ansi-terminal](https://hackage.haskell.org/package/ansi-terminal) to:
 * Make the winning sequence stand out when the game ends (can be done with `SetColor Background Vivid`).
 
 <img src="http://i.imgur.com/GsJ3yP6.png" width="365">
+
+## 4. Generate a maze using Wilson's algorithm
+
+The description of the algorithm is quite accessible: http://weblog.jamisbuck.org/2011/1/20/maze-generation-wilson-s-algorithm. Don't try to make it fast – if it can find a 15×15 maze, it's good enough.
+
+Here's a sample 10×10 maze:
+
+```
+ ___________________
+| | |_     _   _|_  |
+| | | | | | |_|_   _|
+| |  _|_|_   ___   _|
+|  _   ___|  _|_  | |
+|  _|_    |   | |_  |
+|     |_|_|_| | | |_|
+|_| |  _|_  |___   _|
+| | |  _    | |  ___|
+| | |_|  _|_  |  _| |
+|___|_____|_________|
+
+```
