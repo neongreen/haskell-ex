@@ -67,3 +67,11 @@ Use [ansi-terminal](https://hackage.haskell.org/package/ansi-terminal) to:
 * Make the winning sequence stand out when the game ends (can be done with `SetColor Background Vivid`).
 
 <img src="http://i.imgur.com/GsJ3yP6.png" width="365">
+
+## 2. Calculate probability of winning using simulation
+
+There's a contest going on in a Russian social network: seven prizes will be given to seven randomly chosen people among those who have reposted a certain post. (There are actually 100 prizes, but the other 93 suck, so we'll ignore them.) There are already ~1000000 reposts. My sister wonders: what's the probability of her winning at least one prize (out of those seven) if she reposts the post 10 times using 10 different accounts? What about 100 times? 1000 times?
+
+Calculate the answer by running a simulation some number of times (for instance, 10000 times). You can use [`System.Random`](https://hackage.haskell.org/package/random/docs/System-Random.html) or some other random library (e.g. [`Data.Random`](https://hackage.haskell.org/package/random-fu/docs/Data-Random.html)).
+
+A code-free spoiler: if you're not good at probabilistic simulations, <a href="#" title="You can assume that prizes go to people with numbers 1–7, then generate N random numbers between 1 and 1000000+N and check that at least one of them is between 1 and 7. Make sure that generated numbers aren't equal."> here's one way it could be done</a> (answer in the link tooltip).
