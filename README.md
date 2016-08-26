@@ -75,3 +75,9 @@ There's a contest going on in a Russian social network: seven prizes will be giv
 Calculate the answer by running a simulation some number of times (for instance, 10000 times). You can use [`System.Random`](https://hackage.haskell.org/package/random/docs/System-Random.html) or some other random library (e.g. [`Data.Random`](https://hackage.haskell.org/package/random-fu/docs/Data-Random.html)).
 
 A code-free spoiler: if you're not good at probabilistic simulations, <a href="#" title="You can assume that prizes go to people with numbers 1–7, then generate N random numbers between 1 and 1000000+N and check that at least one of them is between 1 and 7. Make sure that generated numbers aren't equal."> here's one way it could be done</a> (answer in the link tooltip).
+
+## 3. Find scary words
+
+If you assign numbers to letters (A=1, B=2, ..., Z=26), then a word is scary if the sum of its letters is 26. “baaed”, for instance, is scary (especially when at first you don't understand it's a silly verb and think it's an ancient god's name).
+
+Find all scary words in the `words` file (it's usually in `/usr/share/dict/words` or `/usr/dict/words`). If you're on Windows, you can [download it](https://raw.githubusercontent.com/eneko/data-repository/master/data/words.txt).
