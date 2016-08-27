@@ -8,7 +8,7 @@ Find all scary words in the `words` file (it's usually in `/usr/share/dict/words
 
 ## 2. Calculate probability of winning using simulation {`reposts`}
 
-There's a contest going on in a Russian social network: seven prizes will be given to seven randomly chosen people among those who have reposted a certain post. (There are actually 100 prizes, but the other 93 suck, so we'll ignore them.) There are already ~1000000 reposts. My sister wonders: what's the probability of her winning at least one prize (out of those seven) if she reposts the post 10 times using 10 different accounts? What about 100 times? 1000 times?
+There's a contest going on in a Russian social network: seven prizes will be given to seven randomly chosen people among those who have reposted a certain post. (There are actually 100 prizes, but the other 93 suck, so we'll ignore them.) There are already ~1000000 reposts. My sister wonders: what's the probability of her winning at least one prize (out of those seven) if she reposts the post 10 times (from different accounts)? What about 100 times? 1000 times?
 
 Calculate the answer by running a simulation some number of times (for instance, 10000 times). You can use [`System.Random`](https://hackage.haskell.org/package/random/docs/System-Random.html) or some other random library (e.g. [`Data.Random`](https://hackage.haskell.org/package/random-fu/docs/Data-Random.html)).
 
@@ -78,7 +78,7 @@ Computer won.
 Use [ansi-terminal](https://hackage.haskell.org/package/ansi-terminal) to:
 
 * Color computer's chips red and human's – green.
-* Make the winning sequence stand out when the game ends (can be done with `SetColor Background Vivid`).
+* Make the winning sequence stand out when the game ends (by changing the background color instead of the foreground color).
 
 <img src="http://i.imgur.com/GsJ3yP6.png" width="365">
 
