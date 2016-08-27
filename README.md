@@ -2,7 +2,7 @@
 
 ## 1. Find scary words {`scary`}
 
-If you assign numbers to letters (A=1, B=2, ..., Z=26), then a word is scary if the sum of its letters is 26. “baaed”, for instance, is scary (especially when at first you don't understand it's a silly verb and think it's an ancient god's name).
+If you assign numbers to letters (A=1, B=2, ..., Z=26), then a word is scary if the sum of its letters is 13. “baaed”, for instance, is scary (especially when at first you don't understand it's a silly verb and think it's an ancient god's name).
 
 Find all scary words in the `words` file (it's usually in `/usr/share/dict/words` or `/usr/dict/words`). If you're on Windows, you can [download it](https://raw.githubusercontent.com/eneko/data-repository/master/data/words.txt).
 
