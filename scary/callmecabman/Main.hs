@@ -9,7 +9,7 @@ scarySum = (foldr (+) 0) . (map (ord' . toLower))
     ord' = (+ (1 - ord 'a')) . ord
 
 isScary :: String -> Bool
-isScary = ((==) 13) . scarySum
+isScary = ((==) 13) . scarySum . (filter isLetter)
 
 main :: IO ()
 main = do getContents
