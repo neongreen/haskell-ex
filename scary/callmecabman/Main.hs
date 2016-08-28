@@ -2,7 +2,6 @@ module Main
   where
 
 import Data.Char
-import Control.Monad
 
 scarySum :: String -> Int
 scarySum = (foldr (+) 0) . (map (ord' . toLower))
@@ -15,4 +14,4 @@ isScary = ((==) 13) . scarySum
 main :: IO ()
 main = do getContents
           >>= return . (map isScary) . words
-          >>= putStrLn . show
+          >>= print
