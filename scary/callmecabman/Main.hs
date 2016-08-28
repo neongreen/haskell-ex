@@ -4,7 +4,7 @@ module Main
 import Data.Char
 
 scarySum :: String -> Int
-scarySum = (foldr (+) 0) . (map (ord' . toLower))
+scarySum = sum . (map (ord' . toLower))
   where
     ord' = (+ (1 - ord 'a')) . ord
 
