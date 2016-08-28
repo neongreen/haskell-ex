@@ -23,13 +23,14 @@ emptyBoard = array boardRange [ ( idx, FREE ) | idx <- range boardRange ]
     where
         boardRange = ( ( 1, 1 ), ( bSize, bSize ) )
 
-showBoard board = unlines $ headerRow ++ intersperse sepRow ( map showRow rows ) ++ footerRow
+showBoard board = unlines $ headerRows ++ intersperse sepRow ( map showRow rows ) ++ [ footerRow ]
     where
-        headerRow = [ xLabelRow, topBoxRow ]
+        headerRows= [ xLabelRow, topBoxRow ]
         xLabelRow = "  " ++ ( intersperse ' ' $ take bSize [ 'A'..'Z' ] )
-        topBoxRow = " ┏" ++ ( intersperse '┯' $ take bSize $ repeat '━' ) ++ "┓"
-        footerRow = [ " ┗" ++ ( intersperse '┷' $ take bSize $ repeat '━' ) ++ "┛" ]
-        sepRow    = " ┠" ++ ( intersperse '┼' $ take bSize $ repeat '━' ) ++ "┨"
+        topBoxRow = borderRow '┏' '┯' '┓'
+        sepRow    = borderRow '┠' '┼' '┨'
+        footerRow = borderRow '┗' '┷' '┛'
+        borderRow start middle end = [ ' ', start ] ++ ( intersperse middle $ take bSize $ repeat '━' ) ++ [ end ]
         showRow ( rowIdx, rowData ) = ( show rowIdx ) ++ ( '┃' : intersperse '│' ( map lookupLabel rowData ) ++ ['┃'] )
         rows = map (\i -> ( i, [ board ! (i,j) | j <- [1..bSize] ] ) ) [1..bSize]
         lookupLabel label = case label of
