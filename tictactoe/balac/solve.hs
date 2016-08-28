@@ -16,6 +16,8 @@ type Pos = (Int, Int)
 
 type Move = (Pos, Label)
 
+type Turn = Board -> Label -> IO Board
+
 bSize = 3
 
 emptyBoard :: Board
@@ -37,6 +39,36 @@ showBoard board = unlines $ headerRows ++ intersperse sepRow ( map showRow rows 
                                 FREE -> ' '
                                 O    -> 'O'
                                 X    -> 'X'
+
+strToPos :: String -> Maybe Pos
+strToPos str = do
+    if length str' < 2
+        then Nothing
+        else do
+            row <- getRow
+            col <- getCol
+            if all ( \x -> x > 0 && x <= bSize ) [ row, col ]
+                then return (row, col)
+                else Nothing
+    where
+        str'   = trim $ map toLower str
+        trim   = unwords . words
+        getCol = Just ( ord ( str' !! 0 ) - 96 )
+        rowStr = tail str'
+        getRow = if all isDigit rowStr
+                    then Just ( read rowStr :: Int )
+                    else Nothing
+
+humanTurn :: Turn
+humanTurn board label = do
+    print $ "Your move:\n> "
+    moveStr <- getLine
+    case strToPos moveStr of
+        Nothing -> humanTurn board label
+        Just pos -> return $ board // [ ( pos, label ) ] 
+
+play :: Turn -> Turn -> IO ()
+play turn1 turn2 = undefined
 
 main = do
     hSetEncoding stdout utf8
