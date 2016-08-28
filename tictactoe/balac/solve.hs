@@ -18,6 +18,13 @@ type Move = (Pos, Label)
 
 type Turn = Board -> Label -> IO Board
 
+data MinimaxTurn = MAX | MIN
+
+other :: Label -> Label
+other O = X
+other X = O
+other FREE = FREE
+
 bSize = 3
 
 emptyBoard :: Board
@@ -59,13 +66,46 @@ strToPos str = do
                     then Just ( read rowStr :: Int )
                     else Nothing
 
+applyMove :: Board -> Move -> Board
+applyMove board move = board // [ move ]
+
 humanTurn :: Turn
 humanTurn board label = do
     print $ "Your move:\n> "
     moveStr <- getLine
     case strToPos moveStr of
         Nothing -> humanTurn board label
-        Just pos -> return $ board // [ ( pos, label ) ] 
+        Just pos -> return $ board // [ ( pos, label ) ]
+
+winVectors :: [ [ Pos ] ]
+winVectors = rows ++ cols ++ diagonals
+    where
+        idxs = [1..bSize]
+        rows = map (\row -> map (\col -> ( row, col ) ) idxs ) idxs
+        cols = map (\col -> map (\row -> ( row, col ) ) idxs ) idxs
+        diagonals = [ map (\idx -> (idx, idx) ) idxs, zip idxs $ reverse idxs ] 
+
+
+getWinner :: Board -> Maybe Label
+getWinner board 
+    | length winningVectors == 0 = Nothing
+    | otherwise = Just ( board ! ( ( winningVectors !! 0 ) !! 0 ) )
+    where
+        winningVectors = filter isWinning winVectors
+        isWinning vec = length ( filter (/= FREE) $ nub $ map ( (!) board ) vec ) == 1
+
+--minimax :: MinimaxTurn -> Board -> Label -> ( Board, Int )
+--minimax turnType board label =
+--    case getWinner board of
+--        Just winLabel -> if winLabel == label then return 1 else return -1
+--        Nothing -> let availMoves = [ ( pos, label ) | ( pos, l ) <- assocs board, l == FREE ]
+        
+
+--minimaxTurn :: Turn
+--minimaxTurn board label =
+--    let x = 1
+--        y = 2
+--    in return $ minimax MAX board label
 
 play :: Turn -> Turn -> IO ()
 play turn1 turn2 = undefined
