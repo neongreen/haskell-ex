@@ -18,7 +18,7 @@ There's a contest going on in a Russian social network: seven prizes will be giv
 
 Calculate the answer by running a simulation some number of times (for instance, 10000 times). You can use [`System.Random`](https://hackage.haskell.org/package/random/docs/System-Random.html) or some other random library (e.g. [`Data.Random`](https://hackage.haskell.org/package/random-fu/docs/Data-Random.html)).
 
-A code-free spoiler: if you're not good at probabilistic simulations, <a href="#" title="You can assume that prizes go to people with numbers 1–7, then generate N random numbers between 1 and 1000000+N and check that at least one of them is between 1 and 7. Make sure that generated numbers aren't equal."> here's one way it could be done</a> (answer in the link tooltip).
+A code-free spoiler: if you're not good at probabilistic simulations, <a href="#" title="You can assume that sister's reposts have numbers 1–N, then then generate 7 random numbers between 1 and 1000000+N and check that at least one of them is between 1 and N. Make sure that generated numbers aren't equal."> here's one way it could be done</a> (answer in the link tooltip).
 
 ### 3. Write a tic-tac-toe game {`tictactoe`}
 
