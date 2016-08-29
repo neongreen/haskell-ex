@@ -24,7 +24,7 @@ There's a contest going on in a Russian social network: seven prizes will be giv
 
 Calculate the answer by running a simulation some number of times (for instance, 10000 times). You can use [`System.Random`](https://hackage.haskell.org/package/random/docs/System-Random.html) or some other random library (e.g. [`Data.Random`](https://hackage.haskell.org/package/random-fu/docs/Data-Random.html)).
 
-A code-free spoiler: if you're not good at probabilistic simulations, <a href="#" title="You can assume that sister's reposts have numbers 1–N, then then generate 7 random numbers between 1 and 1000000+N and check that at least one of them is between 1 and N. Make sure that generated numbers aren't equal."> here's one way it could be done</a> (answer in the link tooltip).
+If you're not good at probabilistic simulations, [here's a hint](HINTS.md#reposts).
 
 ### 3. Write a tic-tac-toe game {`tictactoe`}
 
@@ -117,15 +117,13 @@ Here's a sample 10×10 maze:
 
 ### 5. Solve a logic problem using brute-force {`logic-brute`}
 
-Two integer numbers A and B are picked, so that A ≥ B and both numbers are within the range [2, 99]. We tell Mr.P their product (A×B) and Mr.S – their sum (A+B). The following dialog takes place:
+Two integer numbers A and B are picked, so that A ≥ B and both numbers are within the range [2, 99]. We tell Mr. P their product (A×B) and Mr. S – their sum (A+B). The following dialog takes place:
 
 P: I don't know the numbers.  
 S: I knew you didn't know. I don't know either.  
 P: Now I know the numbers.  
-S: Now I know them too.  
+S: Now I know them too.
 
-Find A and B.
-
-<a href="#" title="“I knew you didn't know” means that in every possible world consistent with what S knows about the numbers, there are several possible worlds for P. For instance, let's say that the numbers are 4 and 4. The possible worlds for S are (6,2), (5,3), and (4,4). In the case of (6,2) P wouldn't know the numbers, because 12 (i.e. the only thing that P knows) can mean both 6×2 and 4×3. However, in the case of (5,3) P would know the numbers (because only (5,3) gives 15). Hence, S can't be sure that P doesn't know the numbers. Therefore, the numbers aren't (4,4). By applying bruteforce to all possible pairs, and modelling knowledge, the problem can be solved.">A hint is in this link tooltip.</a>
+Find A and B. If you can't, [here's a hint](HINTS.md#logic-brute).
 
 For more info on the topic, see Oleg Kiselyov's [“Representing knowledge about knowledge”](http://okmij.org/ftp/Algorithms.html#mr-s-p).
