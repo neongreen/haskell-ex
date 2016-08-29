@@ -4,14 +4,14 @@ module Main
 import Data.Char
 
 scarySum :: String -> Int
-scarySum = sum . (map (ord' . toLower))
+scarySum = sum . map (ord' . toLower)
   where
-    ord' = (+ (1 - ord 'a')) . ord
+    ord' c = ord c - ord 'a' + 1
 
 isScary :: String -> Bool
-isScary = ((==) 13) . scarySum . (filter isLetter)
+isScary = (13 ==) . scarySum . filter isLetter
 
 main :: IO ()
-main = do getContents
-          >>= return . (map isScary) . words
-          >>= print
+main = getContents
+       >>= return . map isScary . words
+       >>= print
