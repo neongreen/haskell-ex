@@ -119,10 +119,10 @@ Here's a sample 10×10 maze:
 
 Two integer numbers A and B are picked, so that A ≥ B and both numbers are within the range [2, 99]. We tell Mr.P their product (A×B) and Mr.S – their sum (A+B). The following dialog takes place:
 
-P: I don't know the numbers.\
-S: I knew you didn't know. I don't know either.\
-P: Now I know the numbers.\
-S: Now I know them too.\
+P: I don't know the numbers.  
+S: I knew you didn't know. I don't know either.  
+P: Now I know the numbers.  
+S: Now I know them too.  
 
 Find A and B.
 
