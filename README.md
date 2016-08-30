@@ -31,9 +31,6 @@ If you're not good at probabilistic simulations, [here's a hint](HINTS.md#repost
 Here's a sample log that the player should see (Github might be rendering box characters weirdly but they will look okay in terminal):
 
 ~~~
-Who goes first? (human/computer)?
-> h
-
   A B C
  ┏━┯━┯━┓
 1┃ │ │ ┃
@@ -87,12 +84,7 @@ Your move:
 Computer won.
 ~~~
 
-Use [ansi-terminal](https://hackage.haskell.org/package/ansi-terminal) to:
-
-* Color computer's chips red and human's – green.
-* Make the winning sequence stand out when the game ends (by changing the background color instead of the foreground color).
-
-<img src="http://i.imgur.com/GsJ3yP6.png" width="365">
+Use [ansi-terminal](https://hackage.haskell.org/package/ansi-terminal) to color `X`s green and `O`s – red.
 
 ### 4. Generate a maze using Wilson's algorithm `{wilson}`
 
