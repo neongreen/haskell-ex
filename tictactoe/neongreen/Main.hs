@@ -8,15 +8,15 @@ import Data.List
 import Data.Maybe
 import Data.Ord
 
--- | A type for Xs and Os.
-data Cell = X | O
+-- | Crosses vs noughts.
+data Player = X | O
   deriving (Eq, Show)
 
 -- This will be needed later, don't bother about it for now.
-deriveMemoizable ''Cell
+deriveMemoizable ''Player
 
--- | Invert a cell.
-invert :: Cell -> Cell
+-- | Pick the other side.
+invert :: Player -> Player
 invert X = O
 invert O = X
 
@@ -25,20 +25,19 @@ type Pos = (Int, Int)
 
 -- | A playing field is a list of lists of cells. Not very typesafe,
 -- yep. Empty cells are denoted with 'Nothing'.
-type Field = [[Maybe Cell]]
+type Field = [[Maybe Player]]
 
 emptyField :: Field
 emptyField = replicate 3 (replicate 3 Nothing)
 
-getCell :: Pos -> Field -> Maybe Cell
+getCell :: Pos -> Field -> Maybe Player
 getCell (x,y) f = (f !! y) !! x
 
-setCell :: Pos -> Maybe Cell -> Field -> Field
+setCell :: Pos -> Maybe Player -> Field -> Field
 setCell (x,y) c f = set (ix y . ix x) c f
 
--- | Return all rows, columns, and diagonals of a field, together with
--- coordinates of each cell.
-triples :: Field -> [[Maybe Cell]]
+-- | Return all rows, columns, and diagonals of a field.
+triples :: Field -> [[Maybe Player]]
 triples f =
   -- Rows and columns
   f ++ transpose f ++
@@ -50,15 +49,12 @@ data Outcome = Lose | Tie | Win
   deriving (Eq, Ord, Show)
 
 -- | Print a single cell (with coloring)
-cell :: Maybe Cell -> IO ()
-cell Nothing = putStr " "
-cell (Just X) = do
-  setSGR [SetColor Foreground Vivid Green]
-  putStr "X"
-  setSGR [Reset]
-cell (Just O) = do
-  setSGR [SetColor Foreground Vivid Red]
-  putStr "O"
+cell :: Maybe Player -> IO ()
+cell c = do
+  case c of
+    Nothing -> putStr " "
+    Just X  -> setSGR [SetColor Foreground Vivid Green] >> putStr "X"
+    Just O  -> setSGR [SetColor Foreground Vivid Red]   >> putStr "O"
   setSGR [Reset]
 
 -- | Print the whole field.
@@ -78,49 +74,45 @@ printField f = do
   printLine 3 (f!!2)
   putStrLn " ┗━┷━┷━┛"
 
--- | If the field has been won, find the winning player.
-winner :: Field -> Maybe Cell
+-- | If the game has been won, find the winning player.
+winner :: Field -> Maybe Player
 winner f
   | [Just X,Just X,Just X] `elem` triples f = Just X
   | [Just O,Just O,Just O] `elem` triples f = Just O
   | otherwise                               = Nothing
 
 -- | Check whether the given player has won, lost, etc.
-judge
-  :: Cell     -- ^ Player
-  -> Field    -- ^ Field
-  -> Maybe Outcome
-judge c f = case winner f of
+judge :: Player -> Field -> Maybe Outcome
+judge p f = case winner f of
   Nothing -> if all isJust (concat f) then Just Tie else Nothing
-  Just w  -> if w == c then Just Win else Just Lose
+  Just w  -> if w == p then Just Win else Just Lose
 
 -- | What's the best outcome for a player if it's their turn now? And what's
 -- the move that gives that outcome?
-outcome :: Cell -> Field -> (Maybe Pos, Outcome)
+outcome :: Player -> Field -> (Maybe Pos, Outcome)
 outcome =
   -- Here we use 'memoize2' to create a lookup table – if we already computed
   -- the outcome for this position, we won't recompute it.
-  memoize2 $ \c f -> case judge c f of
-    -- If we won already, well, we won. If someone else won and that's not
-    -- us, then we lost. If it's a tie, it's a tie
+  memoize2 $ \p f -> case judge p f of
+    -- If we won/lost already or it's a tie, just report that.
     Just o -> (Nothing, o)
-    -- If nobody won yet, let's try to put 'c' into any of the empty cells
-    -- and find the best outcome for us.
+    -- If nobody won yet, let's try to put 'p' into any of the empty cells
+    -- and find which gives the best outcome for us.
     Nothing -> maximumBy (comparing snd) $ do
       x <- [0..2]; y <- [0..2]
       guard (isNothing (getCell (x,y) f))
-      let f' = setCell (x,y) (Just c) f
-      let theirOutcome = snd (outcome (invert c) f')
+      let f' = setCell (x,y) (Just p) f
+      let theirOutcome = snd (outcome (invert p) f')
           ourOutcome = case theirOutcome of
             Win  -> Lose
             Lose -> Win
             Tie  -> Tie
       return (Just (x, y), ourOutcome)
+    -- By the way, if we gave 'Nothing' when the outcome is 'Lose', the
+    -- computer would give up immediately the game is lost.
 
-{- |
->>> parseMove "A2"
-(0,2)
--}
+-- >>> map parseMove ["A2", "B2", "X8"]
+-- [Just (0,2), Just (1,2), Nothing]
 parseMove :: String -> Maybe Pos
 parseMove s = do
   [a,b] <- Just s
