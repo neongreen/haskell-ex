@@ -109,21 +109,22 @@ winVectors = rows ++ cols ++ diagonals
 getWinner :: Board -> Maybe Label
 getWinner board 
     | null winningVectors = Nothing
-    | otherwise           = Just ( board ! ( ( winningVectors !! 0 ) !! 0 ) )
+    | otherwise           = Just ( board ! ( head . head $ winningVectors ) )
     where
         winningVectors = filter isWinning winVectors
-        isWinning vec
-            | length uniq /= 1 = False
-            | otherwise = ( uniq !! 0 ) /= FREE
+        isWinning vec = case uniq of
+            [FREE]  -> False
+            [_]     -> True
+            _       -> False
             where
-                uniq = nub $ map ( (!) board ) vec
+                uniq = nub $ map ( board ! ) vec
 
         
 minimax :: Label -> Label -> Board -> ScoredBoard
 minimax topLabel curLabel board
     | hasWon    = if isTopWinning then ( 1, board ) else ( -1, board )
     | isDraw    = ( 0, board )
-    | otherwise = head $ sortedBoards
+    | otherwise = head sortedBoards
     where
         hasWon          = isJust posWinner
         posWinner       = getWinner board
@@ -152,7 +153,7 @@ drawGame board = do
     putStrLn "Match Drawn" 
 
 isDrawn :: Board -> Bool
-isDrawn = null . filter ( ( FREE == ) . snd ) . assocs
+isDrawn = notElem FREE . elems
 
 hasWon :: Board -> Bool
 hasWon = isJust . getWinner
@@ -177,7 +178,7 @@ main = do
     hSetEncoding stdout utf8
     hSetBuffering stdout NoBuffering
     putStrLn "Who goes first (human/computer)?"
-    opt <- liftM ( map toLower ) $ getLine
+    opt <- map toLower <$> getLine
     if opt == "h"
         then play emptyBoard X humanTurn minimaxTurn
         else play emptyBoard X minimaxTurn humanTurn
