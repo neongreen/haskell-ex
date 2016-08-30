@@ -6,6 +6,7 @@ import Data.List
 import Data.Char
 import Data.Maybe
 import Data.Function
+import System.Console.ANSI
 
 data Label = FREE | O | X
     deriving ( Eq, Show, Enum, Bounded )
@@ -38,6 +39,7 @@ emptyBoard = array boardRange [ ( idx, FREE ) | idx <- range boardRange ]
     where
         boardRange = ( ( 1, 1 ), ( bSize, bSize ) )
 
+showBoard :: Board -> String
 showBoard board = unlines $ headerRows ++ intersperse sepRow ( map showRow rows ) ++ [ footerRow ]
     where
         headerRows= [ xLabelRow, topBoxRow ]
@@ -52,6 +54,18 @@ showBoard board = unlines $ headerRows ++ intersperse sepRow ( map showRow rows 
                                 FREE -> ' '
                                 O    -> 'O'
                                 X    -> 'X'
+
+printBoard :: Board -> IO ()
+printBoard board = do
+    let string = showBoard board
+    printBoard' string
+    where
+        printBoard' :: String -> IO ()
+        printBoard' []       = return ()
+        printBoard' ('X':xs) = printChar 'X' Green >> printBoard' xs
+        printBoard' ('O':xs) = printChar 'O' Red >> printBoard' xs
+        printBoard' (x:xs)   = printChar x White >> printBoard' xs
+        printChar char color = setSGR [SetColor Foreground Vivid color] >> putStr [char] >> setSGR [Reset]
 
 strToPos :: String -> Maybe Pos
 strToPos str = do
@@ -81,7 +95,11 @@ humanTurn board label = do
     moveStr <- getLine
     case strToPos moveStr of
         Nothing -> humanTurn board label
-        Just pos -> return $ applyMove board ( pos, label )
+        Just pos -> if board ! pos == FREE
+                        then return $ applyMove board ( pos, label )
+                        else do
+                            putStrLn "This cell is already taken!" 
+                            humanTurn board label
 
 winVectors :: [ [ Pos ] ]
 winVectors = rows ++ cols ++ diagonals
@@ -129,12 +147,12 @@ minimaxTurn board label = return $ snd $ minimax label label board
 
 winGame :: Board -> IO ()
 winGame board = do
-    putStrLn $ showBoard board
+    printBoard board
     putStrLn $ ( "Match Won by " ++ ) $ show . fromJust . getWinner $ board
 
 drawGame :: Board -> IO ()
 drawGame board = do
-    putStrLn $ showBoard board
+    printBoard board
     putStrLn "Match Drawn" 
 
 isDrawn :: Board -> Bool
@@ -151,7 +169,7 @@ boardStatus board
 
 play :: Board -> Label -> Turn -> Turn -> IO ()
 play board label turn1 turn2 = do
-    putStrLn $ showBoard board
+    printBoard board
     newBoard <- turn1 board label
     case boardStatus newBoard of
         WIN  -> winGame newBoard
