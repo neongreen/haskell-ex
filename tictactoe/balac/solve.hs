@@ -77,7 +77,7 @@ applyMove board move = board // [ move ]
 
 humanTurn :: Turn
 humanTurn board label = do
-    print $ "Your move:\n> "
+    putStr "Your move:\n> "
     moveStr <- getLine
     case strToPos moveStr of
         Nothing -> humanTurn board label
@@ -130,12 +130,12 @@ minimaxTurn board label = return $ snd $ minimax label label board
 winGame :: Board -> IO ()
 winGame board = do
     putStrLn $ showBoard board
-    print $ ( "Match Won by " ++ ) $ show . fromJust . getWinner $ board
+    putStrLn $ ( "Match Won by " ++ ) $ show . fromJust . getWinner $ board
 
 drawGame :: Board -> IO ()
 drawGame board = do
     putStrLn $ showBoard board
-    print "Match Drawn" 
+    putStrLn "Match Drawn" 
 
 isDrawn :: Board -> Bool
 isDrawn = null . filter ( ( FREE == ) . snd ) . assocs
@@ -161,7 +161,8 @@ play board label turn1 turn2 = do
 main :: IO ()
 main = do
     hSetEncoding stdout utf8
-    print "Who goes first (human/computer)?"
+    hSetBuffering stdout NoBuffering
+    putStrLn "Who goes first (human/computer)?"
     opt <- liftM ( map toLower ) $ getLine
     if opt == "h"
         then play emptyBoard X humanTurn minimaxTurn
