@@ -33,6 +33,6 @@ main = do
         scaries = filter isScary $ words wds
 
     unless (null scaries) $
-      putStrLn $ intercalate "\n" $ filter isScary $ words wds
+      putStr . unlines $ scaries
 
     main
