@@ -14,6 +14,8 @@ Don't forget to use [hlint](https://github.com/ndmitchell/hlint) on your code â€
 
 You can see yours (and others') progress in [this table](https://docs.google.com/spreadsheets/d/1PEF7K42M-cq1XgiAaqwf-XLeJP2wo3Dc8pU3SsD_R8s/edit?usp=sharing).
 
+At the end of each week each exercise is explained by someone who has solved it.
+
 ## Week 1 (August 26 â€“ September 5)
 
 ### 1. Find scary words `{scary}`
