@@ -43,12 +43,12 @@ showBoard :: Board -> String
 showBoard board = unlines $ headerRows ++ intersperse sepRow ( map showRow rows ) ++ [ footerRow ]
     where
         headerRows= [ xLabelRow, topBoxRow ]
-        xLabelRow = "  " ++ ( intersperse ' ' $ take bSize [ 'A'..'Z' ] )
-        topBoxRow = borderRow '┏' '┯' '┓'
-        sepRow    = borderRow '┠' '┼' '┨'
-        footerRow = borderRow '┗' '┷' '┛'
-        borderRow start middle end = [ ' ', start ] ++ ( intersperse middle $ take bSize $ repeat '━' ) ++ [ end ]
-        showRow ( rowIdx, rowData ) = ( show rowIdx ) ++ ( '┃' : intersperse '│' ( map lookupLabel rowData ) ++ ['┃'] )
+        xLabelRow = "  " ++ intersperse ' ' ( take bSize [ 'A'..'Z' ] )
+        topBoxRow = borderRow '┌' '┬' '┐'
+        sepRow    = borderRow '├' '┼' '┤'
+        footerRow = borderRow '└' '┴' '┘'
+        borderRow start middle end = [ ' ', start ] ++ intersperse middle ( replicate bSize '─' ) ++ [ end ]
+        showRow ( rowIdx, rowData ) = show rowIdx ++ ( '│' : intersperse '│' ( map lookupLabel rowData ) ++ ['│'] )
         rows = map (\i -> ( i, [ board ! (i,j) | j <- [1..bSize] ] ) ) [1..bSize]
         lookupLabel label = case label of
                                 FREE -> ' '
