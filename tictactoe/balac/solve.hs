@@ -4,6 +4,8 @@ import System.IO
 import Data.Array
 import Data.List
 import Data.Char
+import Data.Maybe
+import Data.Function
 
 data Label = FREE | O | X
     deriving ( Eq, Show, Enum, Bounded )
@@ -17,6 +19,8 @@ type Pos = (Int, Int)
 type Move = (Pos, Label)
 
 type Turn = Board -> Label -> IO Board
+
+type ScoredBoard = (Int, Board)
 
 data MinimaxTurn = MAX | MIN
 
@@ -94,12 +98,24 @@ getWinner board
         winningVectors = filter isWinning winVectors
         isWinning vec = length ( filter (/= FREE) $ nub $ map ( (!) board ) vec ) == 1
 
---minimax :: MinimaxTurn -> Board -> Label -> ( Board, Int )
---minimax turnType board label =
---    case getWinner board of
---        Just winLabel -> if winLabel == label then return 1 else return -1
---        Nothing -> let availMoves = [ ( pos, label ) | ( pos, l ) <- assocs board, l == FREE ]
         
+minimax :: Label -> Label -> Board -> ScoredBoard
+minimax topLabel curLabel board
+    | hasWon    = if isTopWinning then ( 1, board ) else ( -1, board )
+    | isDraw    = ( 0, board )
+    | otherwise = head $ sortedBoards
+    where
+        hasWon          = isJust posWinner
+        posWinner       = getWinner board
+        winLabel        = fromJust posWinner
+        isTopWinning    = winLabel == topLabel
+        isDraw          = null availMoves
+        availMoves      = [ ( pos, curLabel ) | ( pos, l ) <- assocs board, l == FREE ]
+        availBoards     = map ( applyMove board ) availMoves
+        scoredBoards    = map ( minimax topLabel $ other curLabel ) availBoards
+        minSort         = sortBy ( compare `on` fst ) scoredBoards
+        maxSort         = reverse minSort
+        sortedBoards    = if topLabel == curLabel then maxSort else minSort
 
 --minimaxTurn :: Turn
 --minimaxTurn board label =
