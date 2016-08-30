@@ -7,6 +7,7 @@ import Data.Char
 import Data.Maybe
 import Data.Function
 import System.Console.ANSI
+import Text.Read
 
 data Label = FREE | O | X
     deriving ( Eq, Show, Enum, Bounded )
@@ -69,22 +70,17 @@ printBoard board = do
 
 strToPos :: String -> Maybe Pos
 strToPos str = do
-    if length str' < 2
-        then Nothing
-        else do
-            row <- getRow
-            col <- getCol
-            if all ( \x -> x > 0 && x <= bSize ) [ row, col ]
-                then return (row, col)
-                else Nothing
+    guard $ length str' >= 2
+    row <- getRow
+    col <- getCol
+    guard $ all ( \x -> x > 0 && x <= bSize ) [ row, col ]
+    return (row, col)
     where
         str'   = trim $ map toLower str
         trim   = unwords . words
-        getCol = Just ( ord ( str' !! 0 ) - 96 )
+        getCol = Just ( ord ( head str' ) - 96 )
         rowStr = tail str'
-        getRow = if all isDigit rowStr
-                    then Just ( read rowStr :: Int )
-                    else Nothing
+        getRow = readMaybe rowStr
 
 applyMove :: Board -> Move -> Board
 applyMove board move = board // [ move ]
@@ -112,8 +108,8 @@ winVectors = rows ++ cols ++ diagonals
 
 getWinner :: Board -> Maybe Label
 getWinner board 
-    | length winningVectors == 0 = Nothing
-    | otherwise = Just ( board ! ( ( winningVectors !! 0 ) !! 0 ) )
+    | null winningVectors = Nothing
+    | otherwise           = Just ( board ! ( ( winningVectors !! 0 ) !! 0 ) )
     where
         winningVectors = filter isWinning winVectors
         isWinning vec
