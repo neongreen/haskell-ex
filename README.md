@@ -1,8 +1,12 @@
 # Haskell exercises
 
-## Prelude
+## What is it
 
 These are exercises for the Alpha study group (if you want to participate, first get into the [Haskell Learning Group](https://github.com/haskell-learning-group/haskell-learning-group) and then ask @neongreen). You have a week to solve each set. Cheating will be punishable by spiders.
+
+The exercises are beginner-to-intermediate level. Expect to learn how to write algorithms, solve simple problems with Haskell, use common libraries, write sites, talk to databases, create interfaces, parse things, do weird type-level stuff, and more.
+
+## Stuff that you should know if you're already in
 
 To submit a solution, create a folder named `<exercise code>/<your Github nick>`. It doesn't matter how to call the `.hs` file, but `Main.hs` is a good choice. If you have commit access – and you should – forking the repository is *not* needed. If you can't do `git push`, it might be because others have changed the repository in the meantime; doing `git pull --rebase` should fix it.
 
