@@ -24,6 +24,8 @@ type ScoredBoard = (Int, Board)
 
 data MinimaxTurn = MAX | MIN
 
+data BoardStatus = WIN | DRAW | PLAY
+
 other :: Label -> Label
 other O = X
 other X = O
@@ -79,7 +81,7 @@ humanTurn board label = do
     moveStr <- getLine
     case strToPos moveStr of
         Nothing -> humanTurn board label
-        Just pos -> return $ board // [ ( pos, label ) ]
+        Just pos -> return $ applyMove board ( pos, label )
 
 winVectors :: [ [ Pos ] ]
 winVectors = rows ++ cols ++ diagonals
@@ -96,7 +98,11 @@ getWinner board
     | otherwise = Just ( board ! ( ( winningVectors !! 0 ) !! 0 ) )
     where
         winningVectors = filter isWinning winVectors
-        isWinning vec = length ( filter (/= FREE) $ nub $ map ( (!) board ) vec ) == 1
+        isWinning vec
+            | length uniq /= 1 = False
+            | otherwise = ( uniq !! 0 ) /= FREE
+            where
+                uniq = nub $ map ( (!) board ) vec
 
         
 minimax :: Label -> Label -> Board -> ScoredBoard
@@ -112,23 +118,51 @@ minimax topLabel curLabel board
         isDraw          = null availMoves
         availMoves      = [ ( pos, curLabel ) | ( pos, l ) <- assocs board, l == FREE ]
         availBoards     = map ( applyMove board ) availMoves
-        scoredBoards    = map ( minimax topLabel $ other curLabel ) availBoards
+        scoredBoards'   = map ( minimax topLabel $ other curLabel ) availBoards
+        scoredBoards    = zipWith ( \( score, _ ) board -> (score, board) ) scoredBoards' availBoards
         minSort         = sortBy ( compare `on` fst ) scoredBoards
         maxSort         = reverse minSort
         sortedBoards    = if topLabel == curLabel then maxSort else minSort
 
---minimaxTurn :: Turn
---minimaxTurn board label =
---    let x = 1
---        y = 2
---    in return $ minimax MAX board label
+minimaxTurn :: Turn
+minimaxTurn board label = return $ snd $ minimax label label board
 
-play :: Turn -> Turn -> IO ()
-play turn1 turn2 = undefined
+winGame :: Board -> IO ()
+winGame board = do
+    putStrLn $ showBoard board
+    print $ ( "Match Won by " ++ ) $ show . fromJust . getWinner $ board
 
+drawGame :: Board -> IO ()
+drawGame board = do
+    putStrLn $ showBoard board
+    print "Match Drawn" 
+
+isDrawn :: Board -> Bool
+isDrawn = null . filter ( ( FREE == ) . snd ) . assocs
+
+hasWon :: Board -> Bool
+hasWon = isJust . getWinner
+
+boardStatus :: Board -> BoardStatus
+boardStatus board
+    | isDrawn board = DRAW
+    | hasWon board  = WIN
+    | otherwise     = PLAY
+
+play :: Board -> Label -> Turn -> Turn -> IO ()
+play board label turn1 turn2 = do
+    putStrLn $ showBoard board
+    newBoard <- turn1 board label
+    case boardStatus newBoard of
+        WIN  -> winGame newBoard
+        DRAW -> drawGame newBoard
+        PLAY -> play newBoard ( other label ) turn2 turn1
+
+main :: IO ()
 main = do
     hSetEncoding stdout utf8
     print "Who goes first (human/computer)?"
     opt <- liftM ( map toLower ) $ getLine
-    let b = emptyBoard // [ ((1,1), X), ((2,2),O) ]
-    putStrLn $ showBoard b
+    if opt == "h"
+        then play emptyBoard X humanTurn minimaxTurn
+        else play emptyBoard X minimaxTurn humanTurn
