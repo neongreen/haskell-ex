@@ -12,11 +12,7 @@ getNonMember :: [Int] -> Int -> IO Int
 getNonMember lst range = head . filter ( `notElem` lst ) . randomRs ( 1, range ) <$> newStdGen
 
 pickNums :: Int -> Int -> IO [Int]
-pickNums 0 _ = return []
-pickNums count range = do
-    rest <- pickNums ( count - 1 ) range
-    newVal <- getNonMember rest range
-    return $ newVal : rest
+pickNums count range = foldM (\x y -> liftM2 (:) ( getNonMember x range ) $ return x ) [] [1..count]
 
 isWin :: Int -> Int -> Int -> IO Bool
 isWin numExistingPosts numPosts numWinners =  do
