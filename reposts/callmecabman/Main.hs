@@ -18,7 +18,7 @@ growRandList up rs = do t <- genDiffRandOne up rs
 
 genDiffRandMany :: Int -> Int -> RVar [Int]
 -- genDiffRandMany up k = foldlM (\rs _ -> growRandList up rs) [] [1..k]
-genDiffRandMany up k = foldr (=<<) (return []) (replicate winners (growRandList up))
+genDiffRandMany up k = foldr (=<<) (return []) (replicate k (growRandList up))
 
 trial :: Int -> RVar Bool
 trial n = any (<= n) <$> genDiffRandMany (basePosts + n) winners
