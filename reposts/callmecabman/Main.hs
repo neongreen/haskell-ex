@@ -28,7 +28,7 @@ simulateTrials n = do results <- replicateM trialsNum (trial n)
                       return (fromIntegral w / fromIntegral trialsNum)
 
 main :: IO ()
-main = do w <- sample $ forM [10, 100, 1000] (\x -> simulateTrials x)
+main = do w <- sample $ forM [10, 100, 1000] simulateTrials
           print w
 
 basePosts :: Int
