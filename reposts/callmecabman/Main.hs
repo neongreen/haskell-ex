@@ -4,7 +4,6 @@ module Main where
 import Data.Random
 import Control.Monad
 import Text.Printf
-import System.Environment
 
 genDiffRandOne :: Int -> [Int] -> RVar Int
 genDiffRandOne up rs = do t <- uniform 1 up
@@ -29,10 +28,7 @@ simulateTrials n = do results <- replicateM trialsNum (trial n)
                       return (fromIntegral w / fromIntegral trialsNum)
 
 main :: IO ()
-main = do a <- getArgs
-          let n = read $ head a :: Int
-          let totalPosts = basePosts + n
-          w <- sample $ forM [10, 100, 1000] (\x -> simulateTrials x)
+main = do w <- sample $ forM [10, 100, 1000] (\x -> simulateTrials x)
           print w
 
 basePosts :: Int
