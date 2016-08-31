@@ -2,6 +2,7 @@ module Main where
 
 --import Data.Foldable
 import Data.Random
+import Data.Function
 import Control.Monad
 import Text.Printf
 
@@ -25,7 +26,7 @@ trial n = any (<= n) <$> genDiffRandMany (basePosts + n) winners
 simulateTrials :: Int -> RVar Float
 simulateTrials n = do results <- replicateM trialsNum (trial n)
                       let w = length (filter id results)
-                      return (fromIntegral w / fromIntegral trialsNum)
+                      return $ ((/) `on` fromIntegral) w trialsNum
 
 main :: IO ()
 main = do w <- sample $ forM [10, 100, 1000] simulateTrials
