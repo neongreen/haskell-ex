@@ -92,6 +92,16 @@ Computer won.
 
 Use [ansi-terminal](https://hackage.haskell.org/package/ansi-terminal) to color `X`s green and `O`s – red.
 
+You can implement any algorithm for computer's moves. Here are some suggestions (ranked from easy to hard):
+
+* Just make a move into any of the empty cells.
+
+* A simple heuristic (if the human puts two in a row, block them).
+
+* Minimax (evaluate all possible boards recursively, pick the move that leads to the situation where no boards are winning for the human).
+
+* More complicated minimax (even if the human can make a tie at any board, choose the move that would lead to the longest game – what if the human would make a mistake later?). See the “A Perfect but Fatalist Player” section in [this article](http://neverstopbuilding.com/minimax).
+
 ### 4. Generate a maze using Wilson's algorithm `{wilson}`
 
 The description of the algorithm is quite accessible: http://weblog.jamisbuck.org/2011/1/20/maze-generation-wilson-s-algorithm. Don't try to make it fast – if it can find a 15×15 maze, it's good enough.
