@@ -1,6 +1,7 @@
 import System.Random
 import System.IO
 import Control.Monad
+import Data.Function
 
 kNumExistingPosts = 1000000 :: Int
 kNumPosts = [ 10, 100, 1000 ] :: [Int]
@@ -26,7 +27,7 @@ isWin numExistingPosts numPosts numWinners =  do
 winProb :: Int -> Int -> Int -> IO Float
 winProb numExistingPosts numPosts numTrials = do
     results <- replicateM numTrials $ isWin numExistingPosts numPosts kNumWinners
-    return $ fromIntegral( length ( filter id results ) ) / ( fromIntegral numTrials )
+    return $ ( (/) `on` fromIntegral ) ( length $ filter id results ) numTrials
 
 main = do
     results <- mapM (\x -> winProb kNumExistingPosts x kNumTrials ) kNumPosts
