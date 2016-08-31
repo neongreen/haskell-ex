@@ -37,3 +37,9 @@ stmt3RejProds = S.map (\(x,y) -> x*y) stmt3Rej
 stmt3Prods = S.map( \(x,y) -> x*y ) pStmt3
 
 sStmt3 = S.filter (\(x,y) -> not $ S.member (x*y) stmt3RejProds) sStmt2
+sortedSt3Pairs = sortBy (\(a,b) (c,d) -> compare (a+b) (c+d)) $ S.elems sStmt3
+groupedSt3Pairs = groupBy (\(a,b) (c,d) -> (a+b) == (c+d)) sortedSt3Pairs
+pair = head $ head $ filter (\x -> length x == 1) groupedSt3Pairs
+
+main = do
+    print pair
