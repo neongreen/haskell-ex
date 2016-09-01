@@ -10,7 +10,11 @@ import qualified Data.Char as Char
 
 
 main :: IO ()
-main = undefined
+main = do
+  word <- getLine
+  print . isScary $ word
+
+
 
 letterValue :: Char -> Integer
 letterValue =
@@ -27,3 +31,13 @@ letterValue =
       0
     where
     offset = 96
+
+
+
+isScary :: String -> Bool
+isScary =
+  (== scaryNumber) .
+  sum .
+  fmap letterValue
+  where
+  scaryNumber = 13
