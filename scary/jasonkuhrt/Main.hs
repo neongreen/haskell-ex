@@ -25,12 +25,11 @@ letterValue =
   where
   doLetterValue :: Integer -> Integer
   doLetterValue charOrd
-    | charOrd >= 65 && charOrd <= 122 =
-      toInteger $ charOrd - offset
-    | otherwise =
-      0
+    | isInRange charOrd = charOrd - offset
+    | otherwise = 0
     where
     offset = 96
+    isInRange = isInRangeOf (97, 122)
 
 
 
@@ -41,3 +40,9 @@ isScary =
   fmap letterValue
   where
   scaryNumber = 13
+
+
+
+isInRangeOf :: (Integer, Integer) -> Integer -> Bool
+isInRangeOf (rangeMin, rangeMax) n =
+  n >= rangeMin && n <= rangeMax
