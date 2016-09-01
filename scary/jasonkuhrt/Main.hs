@@ -6,7 +6,7 @@
 -- The dictionary can be found at /usr/share/dict/words (macOS)
 
 import qualified Data.Char as Char
-import qualified Data.List.Split as Split
+-- import Control.Monad
 
 
 
@@ -16,10 +16,13 @@ main = printScaryDict
 
 
 printScaryDict :: IO ()
-printScaryDict = do
-  -- TODO This can be optimized. First realize that any word that starts with letter "n" or later _cannot_ be scary because its sum must be higher than 13 because "n" alone is equal to 14. Second, note that words in this dictionary are ordered alphabetically. Therefore we can stop searching the dictionary after the letter "m"!
-  dictionary <- readFile "/usr/share/dict/words"
-  print . filter isScary . Split.splitOn "\n" $ dictionary
+printScaryDict =
+  print
+  . filter isScary
+  -- takeWhile optimization: Words in this dictionary are ordered alphabetically. Therefore we can stop searching the dictionary once words are no longer possibly scary (all words after "n", see "isPossiblyScary" for more details).
+  . takeWhile isPossiblyScary
+  . words
+  =<< readFile "/usr/share/dict/words"
 
 
 
@@ -40,15 +43,24 @@ letterValue =
 
 
 
+
 isScary :: String -> Bool
-isScary "" = False
-isScary word
-  -- Short Circuit Optimization: If the word's first character _number_ is beyond the scary number then naturally the word's sum *must* be greater than (importantly to us: _not_) the scary number.
-  | letterValue (head word) > scaryNumber = False
-  | otherwise = doIsScary word
-  where
-  doIsScary = (== scaryNumber) . sum . fmap letterValue
-  scaryNumber = 13
+isScary = (== scaryNumber) . sum . fmap letterValue
+
+
+
+-- Useful for short circuit optimizations: If the word's first character _number_ is beyond the scary number then naturally the word's sum *must* be greater than (importantly to us: _not_) the scary number.
+
+-- In this program "13" is the scary number which results in any word starting with the letter "m" onward never being scary.
+
+isPossiblyScary :: String -> Bool
+isPossiblyScary "" = False
+isPossiblyScary word = (<= scaryNumber) . letterValue . head $ word
+
+
+
+scaryNumber :: Integer
+scaryNumber = 13
 
 
 
