@@ -3,44 +3,26 @@
 -- Given a letter-to-number mapping, find all "scary" words in the dictionary.
 -- The mapping system is A=1, B=2, ..., Z=26.
 -- A "scary" word is any word whose sum is 13.
--- The dictionary can be found at /usr/share/dict/words (macOS)
+-- The dictionary file can be found at /usr/share/dict/words (macOS)
 
 import qualified Data.Char as Char
--- import Control.Monad
 
 
 
 main :: IO ()
-main = printScaryDict
+main = printScaryWords "/usr/share/dict/words"
 
 
 
-printScaryDict :: IO ()
-printScaryDict =
+printScaryWords :: String -> IO ()
+printScaryWords dictionaryFilePath =
+  -- TODO Handle the possible exception thrown by readfile.
   print
   . filter isScary
   -- takeWhile optimization: Words in this dictionary are ordered alphabetically. Therefore we can stop searching the dictionary once words are no longer possibly scary (all words after "n", see "isPossiblyScary" for more details).
   . takeWhile isPossiblyScary
   . words
-  =<< readFile "/usr/share/dict/words"
-
-
-
-letterValue :: Char -> Integer
-letterValue =
-  doLetterValue .
-  toInteger .
-  Char.ord .
-  Char.toLower
-  where
-  doLetterValue :: Integer -> Integer
-  doLetterValue charOrd
-    | isInRange charOrd = charOrd - offset
-    | otherwise = 0
-    where
-    offset = 96
-    isInRange = isInRangeOf (97, 122)
-
+  =<< readFile dictionaryFilePath
 
 
 
@@ -61,6 +43,23 @@ isPossiblyScary word = (<= scaryNumber) . letterValue . head $ word
 
 scaryNumber :: Integer
 scaryNumber = 13
+
+
+
+letterValue :: Char -> Integer
+letterValue =
+  doLetterValue .
+  toInteger .
+  Char.ord .
+  Char.toLower
+  where
+  doLetterValue :: Integer -> Integer
+  doLetterValue charOrd
+    | isInRange charOrd = charOrd - offset
+    | otherwise = 0
+    where
+    offset = 96
+    isInRange = isInRangeOf (97, 122)
 
 
 
