@@ -6,13 +6,20 @@
 -- The dictionary can be found at /usr/share/dict/words (macOS)
 
 import qualified Data.Char as Char
+import qualified Data.List.Split as Split
 
 
 
 main :: IO ()
-main = do
-  word <- getLine
-  print . isScary $ word
+main = printScaryDict
+
+
+
+printScaryDict :: IO ()
+printScaryDict = do
+  -- TODO This can be optimized. First realize that any word that starts with letter "n" or later _cannot_ be scary because its sum must be higher than 13 because "n" alone is equal to 14. Second, note that words in this dictionary are ordered alphabetically. Therefore we can stop searching the dictionary after the letter "m"!
+  dictionary <- readFile "/usr/share/dict/words"
+  print . filter isScary . Split.splitOn "\n" $ dictionary
 
 
 
