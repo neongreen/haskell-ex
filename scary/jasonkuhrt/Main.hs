@@ -10,16 +10,16 @@ import qualified Data.Char as Char
 
 
 main :: IO ()
-main = printScaryWords "/usr/share/dict/words"
+main = printScaryDictWords "/usr/share/dict/words"
 
 
 
-printScaryWords :: String -> IO ()
-printScaryWords dictionaryFilePath =
-  -- TODO Handle the possible exception thrown by readfile.
+printScaryDictWords :: String -> IO ()
+printScaryDictWords dictionaryFilePath =
+  -- TODO Handle the possible exception thrown by readfile!
   print
   . filter isScary
-  -- takeWhile optimization: Words in this dictionary are ordered alphabetically. Therefore we can stop searching the dictionary once words are no longer possibly scary (all words after "n", see "isPossiblyScary" for more details).
+  -- Optimization: This function expects a list of words sorted alphabetically so that we can stop searching once words are no longer possibly scary (all words after "n", see "isPossiblyScary" for more details).
   . takeWhile isPossiblyScary
   . words
   =<< readFile dictionaryFilePath
