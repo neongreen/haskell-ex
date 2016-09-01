@@ -41,11 +41,13 @@ letterValue =
 
 
 isScary :: String -> Bool
-isScary =
-  (== scaryNumber) .
-  sum .
-  fmap letterValue
+isScary "" = False
+isScary word
+  -- Short Circuit Optimization: If the word's first character _number_ is beyond the scary number then naturally the word's sum *must* be greater than (importantly to us: _not_) the scary number.
+  | letterValue (head word) > scaryNumber = False
+  | otherwise = doIsScary word
   where
+  doIsScary = (== scaryNumber) . sum . fmap letterValue
   scaryNumber = 13
 
 
