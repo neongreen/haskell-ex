@@ -6,6 +6,7 @@
 -- The dictionary file can be found at /usr/share/dict/words (macOS)
 
 import qualified Data.Char as Char
+import qualified Data.Ix as Range
 
 
 
@@ -59,10 +60,4 @@ letterValue =
     | otherwise = 0
     where
     offset = 96
-    isInRange = isInRangeOf (97, 122)
-
-
-
-isInRangeOf :: (Integer, Integer) -> Integer -> Bool
-isInRangeOf (rangeMin, rangeMax) n =
-  n >= rangeMin && n <= rangeMax
+    isInRange = Range.inRange (97, 122)
