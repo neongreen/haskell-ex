@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 -- # Reposts
 
 -- Question:
@@ -18,6 +19,7 @@ module Main where
 import qualified Data.List as List
 import qualified System.Random as Random
 import qualified Text.Printf as Print
+import qualified Control.Monad as Monad
 
 
 
@@ -33,47 +35,66 @@ import qualified Text.Printf as Print
 --    calculating the probability of Bob being amongst the winners.
 
 type Winners = [Int]
+type WinCount = Int
+
+data Experiment = Experiment {
+  prizeCount :: Int,
+  repostCount :: Int,
+  myReposts :: Int
+} deriving (Show)
+
+
 
 main :: IO ()
-main = simulate
-
-
-
-simulate :: IO ()
-simulate = do
-  let winCount = realToFrac $ countWinsPerTrials trialCount :: Double
-  let winProbability = winCount / realToFrac trialCount * 100
-  Print.printf "Probability of Bob winning is %F%%." winProbability
-
-countWinsPerTrials :: Int -> Int
-countWinsPerTrials numOfRuns = sum (List.unfoldr go 1)
+main = do
+  printChanceIfmyReposts 10
+  printChanceIfmyReposts 100
+  printChanceIfmyReposts 1000
   where
-  go runNum
-    | runNum > numOfRuns = Nothing
-    | otherwise = Just (runTrial runNum, runNum + 1)
+  printChanceIfmyReposts n = do
+    let e = Experiment {
+      myReposts = n,
+      repostCount = 1000000,
+      prizeCount = 7
+    }
+    let probability = myChanceIf e
+    Print.printf ("Given "++ show e ++"\nthe probability of winning is %F%%.\n\n") probability
 
-runTrial :: Int -> Int
-runTrial = countBobsWins . generateWinners
 
-countBobsWins :: Winners -> Int
-countBobsWins = length . filter (<= bobsRepostCount)
 
-generateWinners :: Int -> Winners
-generateWinners seed =
-  take winnersDrawn $ Random.randomRs (1, totalRepostCount) generator
+myChanceIf :: Experiment -> Double
+myChanceIf experiment =
+  realNumDiv winCount trialCount * 100
   where
-  generator = Random.mkStdGen seed
+
+  winCount = sum $ runExperimentTimes experiment trialCount
+  trialCount = 10000
+
+  runExperimentTimes :: Experiment -> Int -> [WinCount]
+  runExperimentTimes experiment numOfRuns = List.unfoldr go 1
+    where
+    go runNum
+      | runNum > numOfRuns = Nothing
+      | otherwise = Just (runExperiment runNum experiment, runNum + 1)
 
 
 
--- Variables --
+runExperiment :: Int -> Experiment -> WinCount
+runExperiment seed Experiment{..} =
+  countMyWins (generateWinners seed)
+  where
 
--- Examples:
--- 7 | 1 mil | 10   = .01%
--- 7 | 1 mil | 100  = .06%
--- 7 | 1 mil | 1000 = .74%
+  countMyWins :: Winners -> Int
+  countMyWins = length . filter (<= myReposts)
 
-winnersDrawn = 7
-totalRepostCount = 1000000
-bobsRepostCount = 1000
-trialCount = 10000
+  -- TODO Check for duplicates.
+  generateWinners :: Int -> Winners
+  generateWinners seed =
+    take prizeCount . Random.randomRs (1, repostCount) $ generator
+    where
+    generator = Random.mkStdGen seed
+
+
+
+realNumDiv :: (Fractional f, Real a) => Int -> Int -> f
+realNumDiv n m = realToFrac n / realToFrac m
