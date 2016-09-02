@@ -45,6 +45,8 @@ data Experiment = Experiment {
 
 
 
+-- Report on several experiments varying by how many times I repost.
+
 main :: IO ()
 main = do
   printChanceIfmyReposts 10
@@ -62,13 +64,15 @@ main = do
 
 
 
+-- Run an experiment many times and then calculate how likely I am to win.
+
 myChanceIf :: Experiment -> Double
-myChanceIf experiment =
-  realNumDiv winCount trialCount * 100
+myChanceIf experiment = probability
   where
 
-  winCount = sum $ runExperimentTimes experiment trialCount
-  trialCount = 10000
+  probability = realToFrac winCount / realToFrac iterations * 100
+  winCount = sum . runExperimentTimes experiment $ iterations
+  iterations = 10000
 
   runExperimentTimes :: Experiment -> Int -> [WinCount]
   runExperimentTimes experiment numOfRuns = List.unfoldr go 1
@@ -78,6 +82,11 @@ myChanceIf experiment =
       | otherwise = Just (runExperiment runNum experiment, runNum + 1)
 
 
+
+-- Run an experiment showing how many times I win the draw.
+-- Note that this is NOT a boolean result since I _can win multiple draws_
+-- because I have multiple reposts (obviously excepting the case where I run the
+-- experiment with zero or one repost of mine).
 
 runExperiment :: Int -> Experiment -> WinCount
 runExperiment seed Experiment{..} =
@@ -100,6 +109,3 @@ runExperiment seed Experiment{..} =
 
 countUnique :: Eq a => [a] -> Int
 countUnique = length . List.nub
-
-realNumDiv :: (Fractional f, Real a) => Int -> Int -> f
-realNumDiv n m = realToFrac n / realToFrac m
