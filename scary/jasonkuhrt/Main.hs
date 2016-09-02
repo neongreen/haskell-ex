@@ -69,3 +69,11 @@ letterValue char
   -- by value of our system's first unicode point (minus 1, because we
   -- are one-based rather than zero-based) to align our numbering.
   calcValue = subtract (Char.ord 'a' - 1) . Char.ord
+
+  -- Alternative implementation:
+  -- This solution reads better but proved slower by multiple seconds.
+  --
+  -- | isAll [Char.isAscii, Char.isLetter] char = calcValue char
+  -- | otherwise = 0
+  -- where
+  -- calcValue = subtract (Char.ord 'a' - 1) . Char.ord . Char.toLower
