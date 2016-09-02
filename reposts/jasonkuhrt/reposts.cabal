@@ -1,0 +1,26 @@
+name:                reposts
+version:             0.1.0.0
+synopsis:            Initial project template from stack
+description:         Please see README.md
+homepage:            https://github.com/jasonkuhrt/reposts#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Jason Kuhrt
+maintainer:          jasonkuhrt@me.com
+copyright:           ISC
+category:            App
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+executable reposts-exe
+  hs-source-dirs:      .
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , random
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/jasonkuhrt/reposts
