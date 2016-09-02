@@ -87,14 +87,19 @@ runExperiment seed Experiment{..} =
   countMyWins :: Winners -> Int
   countMyWins = length . filter (<= myReposts)
 
-  -- TODO Check for duplicates.
   generateWinners :: Int -> Winners
   generateWinners seed =
-    take prizeCount . Random.randomRs (1, repostCount) $ generator
+    take prizeCount .
+    List.nub . -- Avoid duplicates. May arise since random...
+    Random.randomRs (1, repostCount) $
+    generator
     where
     generator = Random.mkStdGen seed
 
 
+
+countUnique :: Eq a => [a] -> Int
+countUnique = length . List.nub
 
 realNumDiv :: (Fractional f, Real a) => Int -> Int -> f
 realNumDiv n m = realToFrac n / realToFrac m
