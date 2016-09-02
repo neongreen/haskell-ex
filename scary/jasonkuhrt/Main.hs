@@ -42,19 +42,18 @@ isPossiblyScary word = (<= scaryNumber) . letterValue . head $ word
 
 
 
-scaryNumber :: Integer
+scaryNumber :: Int
 scaryNumber = 13
 
 
 
-letterValue :: Char -> Integer
+letterValue :: Char -> Int
 letterValue =
   doLetterValue .
-  toInteger .
   Char.ord .
   Char.toLower
   where
-  doLetterValue :: Integer -> Integer
+  doLetterValue :: Int -> Int
   doLetterValue charOrd
     | isInRange charOrd = charOrd - offset
     | otherwise = 0
