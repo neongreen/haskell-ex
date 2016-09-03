@@ -35,7 +35,9 @@ import qualified Control.Monad as Monad
 --    calculating the probability of Bob being amongst the winners.
 
 type Winners = [Int]
-type WinCount = Int
+data DrawOutcome = Lost | Won deriving (Show,Eq)
+
+
 
 data Experiment = Experiment {
   prizeCount :: Int,
@@ -54,11 +56,7 @@ main = do
   printChanceIfmyReposts 1000
   where
   printChanceIfmyReposts n = do
-    let e = Experiment {
-      myReposts = n,
-      repostCount = 1000000,
-      prizeCount = 7
-    }
+    let e = Experiment { myReposts = n, repostCount = 1000000, prizeCount = 7 }
     Print.printf
       "Given %s\nthe probability of winning is %F%%.\n\n"
       (show e)
@@ -73,38 +71,38 @@ myChanceIf experiment = probability
   where
 
   probability = realToFrac winCount / realToFrac iterations * 100
-  winCount = sum . runExperimentTimes experiment $ iterations
-  iterations = 10000
+  winCount = length . filter (== Won) . runExperimentTimes experiment $ iterations
+  iterations = 100000
 
-  runExperimentTimes :: Experiment -> Int -> [WinCount]
+  runExperimentTimes :: Experiment -> Int -> [DrawOutcome]
   runExperimentTimes experiment numOfRuns =
-    map (\runNum -> runExperiment runNum experiment) [1..numOfRuns]
-
-
-
--- Run an experiment showing how many times I win the draw.
--- Note that this is NOT a boolean result since I _can win multiple draws_
--- because I have multiple reposts (obviously excepting the case where I run the
--- experiment with zero or one repost of mine).
-
-runExperiment :: Int -> Experiment -> WinCount
-runExperiment seed Experiment{..} =
-  countMyWins (generateWinners seed)
-  where
-
-  countMyWins :: Winners -> Int
-  countMyWins = length . filter (<= myReposts)
-
-  generateWinners :: Int -> Winners
-  generateWinners seed =
-    take prizeCount .
-    List.nub . -- Avoid duplicates. May arise since random...
-    Random.randomRs (1, repostCount) $
-    generator
+    List.unfoldr go (1, Random.split (Random.mkStdGen 1))
     where
-    generator = Random.mkStdGen seed
+    go (runNum, (g1,g2))
+      | runNum > numOfRuns = Nothing
+      | otherwise = Just (
+          runExperiment g1 experiment,
+          (runNum + 1, Random.split g2)
+        )
 
 
+
+-- Run an experiment showing if I win or lose.
+
+runExperiment :: Random.RandomGen g => g -> Experiment -> DrawOutcome
+runExperiment generator Experiment{..} =
+  boolToOutcome .
+  any (<= myReposts) .
+  take prizeCount .
+  List.nub . -- Avoid duplicates. May arise since random...
+  Random.randomRs (1, repostCount)
+  $ generator
+
+
+
+boolToOutcome :: Bool -> DrawOutcome
+boolToOutcome True = Won
+boolToOutcome False = Lost
 
 countUnique :: Eq a => [a] -> Int
 countUnique = length . List.nub
