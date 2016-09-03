@@ -16,7 +16,7 @@ You can see yours (and others') progress in [this table](https://docs.google.com
 
 At the end of each week each exercise is explained by someone who has solved it.
 
-## Week 1 (August 26 – September 5)
+## Week 1 (August 26 – September 4)
 
 ### 1. Find scary words `{scary}`
 
