@@ -50,7 +50,7 @@ nextVertex maze vert = do
     return $ moveVertex vert randDir
 
 randomPath :: Maze -> Path -> Vertex -> IO Path
-randomPath maze path vertex = do
+randomPath maze path vertex =
     if maze ! vertex /= FREE
         then return $ path ++ [vertex]
         else do
@@ -64,31 +64,31 @@ simplifyPath (x:xs) = let simpleTail = simplifyPath xs
                             Nothing     -> x:simpleTail
                             Just index  -> snd $ splitAt index simpleTail
 
-dirsFromIndices :: Vertex -> Vertex -> Label
-dirsFromIndices (y1,x1) (y2,x2) = case ((x2-x1),(y2-y1)) of
+labelsFromIndices :: Vertex -> Vertex -> Label
+labelsFromIndices (y1,x1) (y2,x2) = case (x2-x1,y2-y1) of
                                         (0,-1) -> UP
                                         (0,1)  -> DOWN
                                         (-1,0) -> LEFT
                                         (1,0)  -> RIGHT
 
-dirsFromPath :: Path -> [Label]
-dirsFromPath [] = []
-dirsFromPath [x] = []
-dirsFromPath (x:y:xs) = dirsFromIndices x y : dirsFromPath (y:xs)
+labelsFromPath :: Path -> [Label]
+labelsFromPath [] = []
+labelsFromPath [x] = []
+labelsFromPath (x:y:xs) = labelsFromIndices x y : labelsFromPath (y:xs)
 
 updateMaze :: Maze -> Path -> [Label] -> Maze
 updateMaze maze path labels = maze // zip path labels
 
 solveMaze' :: Maze -> [Vertex] -> [Vertex] -> IO Maze
-solveMaze' maze unvisited visited = do
-    if length unvisited == 0
+solveMaze' maze unvisited visited =
+    if null unvisited
         then return maze
         else do
             startVertex <- pickRandom unvisited
             path <- randomPath maze [] startVertex
             let simplifiedPath = simplifyPath path
-            let pathDirs = dirsFromPath simplifiedPath
-            let maze' = updateMaze maze simplifiedPath pathDirs
+            let pathLabels = labelsFromPath simplifiedPath
+            let maze' = updateMaze maze simplifiedPath pathLabels
             solveMaze' maze' ( unvisited \\ simplifiedPath ) ( visited ++ simplifiedPath ) 
 
 solveMaze :: Maze -> IO Maze
@@ -106,7 +106,7 @@ mazeHeight :: Maze -> Int
 mazeHeight maze = fst $ snd $ bounds maze 
 
 borderRow :: Int -> String
-borderRow width = ( '+' : take width (repeat '-') ) ++ ['+']
+borderRow width = ( '+' : replicate width '-' ) ++ ['+']
 
 alternate :: [a] -> [a] -> [a]
 alternate [] _ = []
@@ -132,12 +132,12 @@ showMaze maze = unlines $ topRow ++ rowStrings
                     vertChar _         = '|'
 
 showMazeLabels :: Maze -> String
-showMazeLabels maze = unlines $ borderRowString ++ (map showRow rows) ++ borderRowString
+showMazeLabels maze = unlines $ borderRowString ++ map showRow rows ++ borderRowString
                 where 
                     borderRowString = [ borderRow ( 2 * width - 1 ) ]
                     width = mazeWidth maze
                     showRow row = ( '|' : intersperse '|' ( showRow' row ) ) ++ ['|']
-                    showRow' row = map lookupSymbol row
+                    showRow' = map lookupSymbol
                     lookupSymbol x = case x of
                                         LEFT    -> '←'
                                         RIGHT   -> '→'
@@ -154,7 +154,7 @@ main = do
     w <- getLine
     putStrLn "Maze Height: "
     h <- getLine
-    let maze = createEmptyMaze $ ( read w :: Int, read h :: Int )
+    let maze = createEmptyMaze ( read w :: Int, read h :: Int )
     solvedMaze <- solveMaze maze
     putStrLn $ showMazeLabels solvedMaze
     putStrLn $ showMaze solvedMaze
