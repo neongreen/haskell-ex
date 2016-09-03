@@ -59,8 +59,10 @@ main = do
       repostCount = 1000000,
       prizeCount = 7
     }
-    let probability = myChanceIf e
-    Print.printf ("Given "++ show e ++"\nthe probability of winning is %F%%.\n\n") probability
+    Print.printf
+      "Given %s\nthe probability of winning is %F%%.\n\n"
+      (show e)
+      (myChanceIf e)
 
 
 
