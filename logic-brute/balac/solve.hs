@@ -1,42 +1,56 @@
-import Data.List
-import qualified Data.Set as S
-import Data.Function
 import GHC.Exts
+import Data.List
 
-add (x,y) = x + y
-mul (x,y) = x * y
+data Choice = Choice { a :: Int, b :: Int, cProd :: Int, cSum :: Int }
+                deriving( Show, Eq )
+
+add x y = x + y
+mul x y = x * y
+
+makeChoice :: Int -> Int -> Choice
+makeChoice a b = Choice a b (a*b) (a+b)
 
 allNums = [2..99] :: [Int]
 
-allPairs = [ (x,y) | x <- allNums, y <- allNums, x < y ]
+type Space = [Choice]
 
-allPairsSet = S.fromList allPairs
+univ :: Space
+univ = [ makeChoice x y | x <- allNums, y <- allNums, x >= y ]
 
-groupedProdPairs = groupWith mul allPairs
-nonUniqProdPairs = filter (\x -> length x > 1) groupedProdPairs
-pStmt1 = S.fromList $ concat $ nonUniqProdPairs
+type Slice = (Int,Space)
 
-uniqProdPairs = S.difference allPairsSet pStmt1
+type SlicePredicate = Slice -> Bool
 
-groupedSumPairs = groupWith add allPairs
+isUniq :: SlicePredicate
+isUniq (_,xs) = length xs == 1
 
-sumPairs :: Int -> [(Int,Int)]
-sumPairs num = map (\x -> (x, num - x)) [2 .. num `div` 2]
+isValue :: Int -> SlicePredicate
+isValue x (value,_) = x == value
 
-hasUniqProd :: Int -> Bool
-hasUniqProd num = any (\x -> S.member x uniqProdPairs ) $ sumPairs num
+isValueIn :: [Int] -> SlicePredicate
+isValueIn xs (value,_) = value `elem` ( nub xs )
 
-sStmt2 = S.fromList $ concat $ filter (not . hasUniqProd . add . head) groupedSumPairs
-sStmt2Sums = S.map add sStmt2
+data Predicate = ProdPredicate SlicePredicate | SumPredicate SlicePredicate
 
-pStmt2 = map ( filter (\(x,y) -> S.member (x+y) sStmt2Sums ) ) nonUniqProdPairs
-pStmt3 = S.fromList $ concat $ filter ( \x -> length x == 1 ) pStmt2
+split :: Predicate -> Space -> ( Space, Space )
+split ( ProdPredicate slicePredicate ) = split' cProd slicePredicate
+split ( SumPredicate slicePredicate ) = split' cSum slicePredicate
 
-stmt3Prods = S.map mul pStmt3
+split' :: (Choice->Int) -> SlicePredicate -> Space -> (Space,Space)
+split' proj predicate space = ( matches, remainder )
+    where
+        slices = map (\lst -> ( proj ( head lst ), lst ) ) $ groupWith proj space
+        matchingSlices = filter predicate slices
+        matches = concat ( map snd matchingSlices )
+        remainder = space \\ matches
 
-sStmt3 = S.filter (\(x,y) -> S.member (x*y) stmt3Prods) sStmt2
-groupedSt3Pairs = groupWith add $ S.elems sStmt3
-pair = head $ head $ filter (\x -> length x == 1) groupedSt3Pairs
+
+( uniqProds, s1 ) = split ( ProdPredicate isUniq ) univ
+( _, s2 ) = split ( SumPredicate ( isValueIn $ map cSum uniqProds ) ) s1
+( s3, _ ) = split ( ProdPredicate isUniq ) s2
+( s4, _ ) = split ( SumPredicate isUniq ) s3
+
+solution  = head s4
 
 main = do
-    print pair
+    print ( a solution, b solution )
