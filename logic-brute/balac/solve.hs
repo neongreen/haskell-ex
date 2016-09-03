@@ -4,9 +4,6 @@ import Data.List
 data Choice = Choice { a :: Int, b :: Int, cProd :: Int, cSum :: Int }
                 deriving( Show, Eq )
 
-add x y = x + y
-mul x y = x * y
-
 makeChoice :: Int -> Int -> Choice
 makeChoice a b = Choice a b (a*b) (a+b)
 
