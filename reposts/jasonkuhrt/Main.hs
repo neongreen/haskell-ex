@@ -75,11 +75,8 @@ myChanceIf experiment = probability
   iterations = 10000
 
   runExperimentTimes :: Experiment -> Int -> [WinCount]
-  runExperimentTimes experiment numOfRuns = List.unfoldr go 1
-    where
-    go runNum
-      | runNum > numOfRuns = Nothing
-      | otherwise = Just (runExperiment runNum experiment, runNum + 1)
+  runExperimentTimes experiment numOfRuns =
+    map (\runNum -> runExperiment runNum experiment) [1..numOfRuns]
 
 
 
