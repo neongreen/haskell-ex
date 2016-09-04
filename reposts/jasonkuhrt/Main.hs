@@ -33,6 +33,22 @@ import qualified Control.Monad as Monad
 --    has a contiguous serious of reposts beginning at the head of list A.
 --    However! This unlikely detail is inconsequential for the purposes of
 --    calculating the probability of Bob being amongst the winners.
+--
+--    TODO Parallel Approach (credit for idea is @neongreen)
+--
+--      Observation 1
+--      If you have some winners and you want to check whether any
+--      of them won, you just have to check whether the lowest one won.
+--
+--      Observation 2
+--      If you know the lowest winner, you can check whether it's less than
+--      10/100/1000 and get 3 booleans (would be simpler to implement as 3 Ints)
+--
+--      So...
+--      Then you just sum up 10000 of those triples and get 3 answers
+--      simultaneously!
+
+
 
 type Winners = [Int]
 data DrawOutcome = Lost | Won deriving (Show,Eq)
