@@ -24,6 +24,12 @@ If you assign numbers to letters (A=1, B=2, ..., Z=26), then a word is scary if 
 
 Find all scary words in the `words` file (it's usually in `/usr/share/dict/words` or `/usr/dict/words`). If you're on Windows, you can [download it](https://raw.githubusercontent.com/eneko/data-repository/master/data/words.txt).
 
+Common mistakes:
+
+* Treating `zip's` as scary (the mistake is in assigning a numbers to *all* characters, not just non-letter ones, and then `'` usually gets a negative code).
+
+* Treating `Iraq` as scary (uppercase characters should be treated the same as lowercase ones).
+
 ### 2. Calculate probability of winning using simulation `{reposts}`
 
 There's a contest going on in a Russian social network: seven prizes will be given to seven randomly chosen people among those who have reposted a certain post. (There are actually 100 prizes, but the other 93 suck, so we'll ignore them.) There are already ~1000000 reposts. My sister wonders: what's the probability of her winning at least one prize (out of those seven) if she reposts the post 10 times (from different accounts)? What about 100 times? 1000 times?
