@@ -19,7 +19,7 @@ type Path = [Vertex]
 
 
 createEmptyMaze :: Size -> Maze
-createEmptyMaze (width,height) = array ( (1,1), (height,width) ) [ ( (row,col), FREE ) | row <- [1..height], col <- [1..width] ]
+createEmptyMaze (width,height) = listArray ( (1,1), (height,width) ) ( repeat FREE )
 
 pickRandom :: [a] -> IO a
 pickRandom xs = do
@@ -52,17 +52,17 @@ nextVertex maze vert = do
 randomPath :: Maze -> Path -> Vertex -> IO Path
 randomPath maze path vertex =
     if maze ! vertex /= FREE
-        then return $ path ++ [vertex]
+        then return $ reverse ( vertex : path )
         else do
             vert <- nextVertex maze vertex
-            randomPath maze (path ++ [vertex]) vert
+            randomPath maze ( vertex : path ) vert
 
 simplifyPath :: Path -> Path
 simplifyPath [] = []
 simplifyPath (x:xs) = let simpleTail = simplifyPath xs
                       in case elemIndex x simpleTail of
-                            Nothing     -> x:simpleTail
-                            Just index  -> snd $ splitAt index simpleTail
+                            Nothing     -> x : simpleTail
+                            Just index  -> drop index simpleTail
 
 labelsFromIndices :: Vertex -> Vertex -> Label
 labelsFromIndices (y1,x1) (y2,x2) = case (x2-x1,y2-y1) of
@@ -72,9 +72,7 @@ labelsFromIndices (y1,x1) (y2,x2) = case (x2-x1,y2-y1) of
                                         (1,0)  -> RIGHT
 
 labelsFromPath :: Path -> [Label]
-labelsFromPath [] = []
-labelsFromPath [x] = []
-labelsFromPath (x:y:xs) = labelsFromIndices x y : labelsFromPath (y:xs)
+labelsFromPath xs = zipWith labelsFromIndices xs ( tail xs )
 
 updateMaze :: Maze -> Path -> [Label] -> Maze
 updateMaze maze path labels = maze // zip path labels
