@@ -2,20 +2,26 @@
 -- Assume "words.txt" exists alongside this file
 
 module Scary (scaryWords, isScary) where
-import Data.Char (ord)
+import Data.Char (ord, toLower)
 
 -- Find all *scary* words in the given list xs
 scaryWords :: [String] -> [String]
 scaryWords xs = filter isScary xs
 
+
+
+
 isScary :: String -> Bool
 isScary s = total == scaryNumber
-  where total = foldr (+) 0 $ map charToNumber s
+  where total = sum $ map charToNumber s
         scaryNumber = 13
 
 charToNumber :: Char -> Int
-charToNumber c = (+) asciiOffset $ ord c
+charToNumber c
+  | elem c alphabet = (+) asciiOffset $ ord $ toLower c
+  | otherwise = 0
   where asciiOffset = -97 + 1
+        alphabet = ['a'..'z']
 
 main :: IO()
 main = do

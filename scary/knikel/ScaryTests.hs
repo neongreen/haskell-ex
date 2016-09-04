@@ -25,6 +25,10 @@ isScaryTests =
     True @=? isScary "baaed"
   , testCase "isScary can recognize a *non-scary* word" $
     False @=? isScary "notscary"
+  , testCase "isScary can handle non-lowercase word" $
+    False @=? isScary "Iraq"
+  , testCase "isScary can handle non-alphabet word" $
+    False @=? isScary "zip's"
   ]
 
 scaryTests :: [Test]
