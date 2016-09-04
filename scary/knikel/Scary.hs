@@ -8,9 +8,6 @@ import Data.Char (ord, toLower)
 scaryWords :: [String] -> [String]
 scaryWords xs = filter isScary xs
 
-
-
-
 isScary :: String -> Bool
 isScary s = total == scaryNumber
   where total = sum $ map charToNumber s
@@ -18,10 +15,11 @@ isScary s = total == scaryNumber
 
 charToNumber :: Char -> Int
 charToNumber c
-  | elem c alphabet = (+) asciiOffset $ ord $ toLower c
+  | elem char alphabet = (+) asciiOffset $ ord char
   | otherwise = 0
   where asciiOffset = -97 + 1
         alphabet = ['a'..'z']
+        char = toLower c
 
 main :: IO()
 main = do
