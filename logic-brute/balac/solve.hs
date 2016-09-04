@@ -25,7 +25,7 @@ isValue :: Int -> SlicePredicate
 isValue x (value,_) = x == value
 
 isValueIn :: [Int] -> SlicePredicate
-isValueIn xs (value,_) = value `elem` ( nub xs )
+isValueIn xs (value,_) = value `elem` nub xs
 
 data Predicate = ProdPredicate SlicePredicate | SumPredicate SlicePredicate
 
@@ -38,7 +38,7 @@ split' proj predicate space = ( matches, remainder )
     where
         slices = map (\lst -> ( proj ( head lst ), lst ) ) $ groupWith proj space
         matchingSlices = filter predicate slices
-        matches = concat ( map snd matchingSlices )
+        matches = concatMap snd matchingSlices
         remainder = space \\ matches
 
 
@@ -49,5 +49,4 @@ split' proj predicate space = ( matches, remainder )
 
 solution  = head s4
 
-main = do
-    print ( a solution, b solution )
+main = print ( a solution, b solution )
