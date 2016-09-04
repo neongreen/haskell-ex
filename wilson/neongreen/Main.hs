@@ -1,10 +1,6 @@
-{-# LANGUAGE MultiWayIf #-}
-
 import Data.Foldable
 import Data.Array
 import Data.Random                  -- from random-fu
-import qualified Data.Map as M
-import Data.Map (Map)
 import Data.Maybe
 import Lens.Micro                   -- from microlens
 
@@ -22,10 +18,10 @@ randomWalk
   -> RVar [(Pos, Arrow)]
 randomWalk size pos stop = go pos
   where
-    bounds = ((0, 0), (fst size - 1, snd size - 1))
+    mazeBounds = ((0, 0), (fst size - 1, snd size - 1))
 
     neighbors :: Pos -> [(Pos, Arrow)]
-    neighbors (x,y) = filter (inRange bounds . fst) [
+    neighbors (x,y) = filter (inRange mazeBounds . fst) [
       ((x,y-1), U), ((x,y+1), D),
       ((x-1,y), L), ((x+1,y), R) ]
 
@@ -41,23 +37,11 @@ randomWalk size pos stop = go pos
 -- 12345678    1|23456|78    178
 -- ABCBDDBE -> A|BCBDD|BE -> ABE
 simplifyWalk :: [(Pos, Arrow)] -> [(Pos, Arrow)]
-simplifyWalk ps = go 0
-  where
-    l = length ps
-    -- For each position, find the last index at which it's encountered
-    lastEncounter :: Map Pos Int
-    lastEncounter = M.fromList (zip (map fst ps) [0..])
-    -- Convert the list of positions to an array (so that it'll be faster
-    -- to access).
-    arr :: Array Int (Pos, Arrow)
-    arr = listArray (0, l-1) ps
-    -- Go through the array, yield items as they come (and jump sometimes).
-    go :: Int -> [(Pos, Arrow)]
-    go i | i >= l    = []
-         | otherwise =
-             let (p, _) = arr ! i
-                 j = lastEncounter M.! p  -- where to jump (might be i==j)
-             in  (arr ! j) : go (j+1)
+simplifyWalk [] = []
+simplifyWalk ((pos, arrow):rest) =
+  case break ((== pos) . fst) (simplifyWalk rest) of
+    (xs, []) -> (pos, arrow) : xs
+    (_,  ys) -> ys
 
 wilson :: Size -> IO (Array (Int, Int) Arrow)
 wilson size@(width, height) = sample $ do
@@ -85,10 +69,8 @@ printArrows arr = do
   for_ [0 .. lastY] $ \y -> do
     for_ [0 .. lastX] $ \x ->
       case arr ! (x, y) of
-        U     -> putChar '↑'
-        D     -> putChar '↓'
-        L     -> putChar '←'
-        R     -> putChar '→'
+        U -> putChar '↑'; D -> putChar '↓'
+        L -> putChar '←'; R -> putChar '→'
         Start -> putChar '•'
     putStrLn ""
 
@@ -99,10 +81,13 @@ printMaze arr = do
   for_ [0 .. lastY] $ \y -> do
     putChar '|'
     for_ [0 .. lastX] $ \x -> do
-      if | y == lastY                             -> putChar '_'
-         | arr ! (x,y) /= D && arr ! (x,y+1) /= U -> putChar '_'
-         | otherwise                              -> putChar ' '
-      if | x == lastX                             -> putChar '|'
-         | arr ! (x,y) /= R && arr ! (x+1,y) /= L -> putChar '|'
-         | otherwise                              -> putChar ' '
+      let noVerticalConnection   = arr ! (x,y) /= D && arr ! (x,y+1) /= U
+          noHorizontalConnection = arr ! (x,y) /= R && arr ! (x+1,y) /= L
+      putChar $ if y == lastY || noVerticalConnection   then '_' else ' '
+      putChar $ if x == lastX || noHorizontalConnection then '|' else ' '
     putStrLn ""
+
+main :: IO ()
+main = do
+  putStr "Size: "; n <- readLn
+  printMaze =<< wilson (n,n)
