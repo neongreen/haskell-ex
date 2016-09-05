@@ -1,52 +1,43 @@
 import GHC.Exts
 import Data.List
 
-data Choice = Choice { a :: Int, b :: Int, cProd :: Int, cSum :: Int }
-                deriving( Show, Eq )
-
-makeChoice :: Int -> Int -> Choice
-makeChoice a b = Choice a b (a*b) (a+b)
-
 allNums = [2..99] :: [Int]
 
+type Choice= (Int,Int)
 type Space = [Choice]
 
-univ :: Space
-univ = [ makeChoice x y | x <- allNums, y <- allNums, x >= y ]
-
+-- Slice of space such that all Choices in them have the same projection along a particular dimension.
+-- The common value of the projection is the `fst` element.
 type Slice = (Int,Space)
 
-type SlicePredicate = Slice -> Bool
+univ :: Space
+univ = [ ( x, y ) | x <- allNums, y <- allNums, x >= y ]
 
-isUniq :: SlicePredicate
-isUniq (_,xs) = length xs == 1
+isUnique :: Slice -> Bool
+isUnique (_,xs) = length xs == 1
 
-isValue :: Int -> SlicePredicate
-isValue x (value,_) = x == value
+isValueIn :: [Int] -> Slice -> Bool
+isValueIn xs (value,_) = value `elem` xs
 
-isValueIn :: [Int] -> SlicePredicate
-isValueIn xs (value,_) = value `elem` nub xs
+cSum :: Choice -> Int
+cSum (x,y) = x + y
 
-data Predicate = ProdPredicate SlicePredicate | SumPredicate SlicePredicate
+cProduct :: Choice -> Int
+cProduct (x,y) = x * y
 
-split :: Predicate -> Space -> ( Space, Space )
-split ( ProdPredicate slicePredicate ) = split' cProd slicePredicate
-split ( SumPredicate slicePredicate ) = split' cSum slicePredicate
-
-split' :: (Choice->Int) -> SlicePredicate -> Space -> (Space,Space)
-split' proj predicate space = ( matches, remainder )
+split :: (Choice->Int) -> (Slice->Bool) -> Space -> (Space,Space)
+split proj predicate space = ( matches, remainder )
     where
         slices = map (\lst -> ( proj ( head lst ), lst ) ) $ groupWith proj space
         matchingSlices = filter predicate slices
         matches = concatMap snd matchingSlices
         remainder = space \\ matches
 
-
-( uniqProds, s1 ) = split ( ProdPredicate isUniq ) univ
-( _, s2 ) = split ( SumPredicate ( isValueIn $ map cSum uniqProds ) ) s1
-( s3, _ ) = split ( ProdPredicate isUniq ) s2
-( s4, _ ) = split ( SumPredicate isUniq ) s3
+( uniqProds, s1 ) = split cProduct isUnique univ
+( _, s2 ) = split cSum ( isValueIn $ map cSum uniqProds ) s1
+( s3, _ ) = split cProduct isUnique s2
+( s4, _ ) = split cSum isUnique s3
 
 solution  = head s4
 
-main = print ( a solution, b solution )
+main = print solution
