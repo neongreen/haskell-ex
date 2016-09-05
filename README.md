@@ -168,9 +168,9 @@ We can compress it by finding all repetitive substrings and writing their indice
 Consider a string. No, c[1/10]different[10/9]Whatever.
 ```
 
-* `[1/10]` refers to 10 characters of the original string starting from index 1 (i.e. 1..10) – `onsider a ` (with a space at the end)
+* `[1/10]` refers to 10 characters of the original string starting from index 1 (i.e. 1..10) – `onsider a␣` (with a space at the end)
 
-* `[10/9]` refers to 9 characters starting from index 10 (i.e. 10..18) – ` string. `.
+* `[10/9]` refers to 9 characters starting from index 10 (i.e. 10..18) – `␣string.␣`.
 
 The task is to compress a string into a list of `Either String (Int, Int)` and decompress it:
 
