@@ -38,9 +38,17 @@ toTokens [] _ _ = []
 toTokens str pos [] = [ Left $ drop pos str ]
 toTokens str pos ((offset,m@(_,prefixLength)):matches) = Left ( take ( offset - pos ) $ drop pos str ) : Right m : toTokens str ( offset + prefixLength ) matches
 
-compressStr :: String -> [Token]
-compressStr "" = [Left ""]
-compressStr str = toTokens str 0 matches
+compress :: String -> [Token]
+compress "" = [Left ""]
+compress str = toTokens str 0 matches
     where 
         suffixes = tail $ zip [0..] ( tails str )
         matches = matchSuffixes str suffixes
+
+decompress :: [Token] -> String
+decompress = decompress' ""
+
+decompress' :: String -> [Token] -> String
+decompress' str [] = str
+decompress' str ((Left x):tokens) = decompress' ( str ++ x ) tokens
+decompress' str ((Right (mpos,mlen)):tokens) = decompress' ( str ++ take mlen ( drop mpos str ) ) tokens
