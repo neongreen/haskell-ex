@@ -24,27 +24,30 @@ findMatch str1 str2 startOffset endOffset
         cpLength = commonPrefixLength str1 str2 0
 
 
-matchSuffixes :: String -> [ (Int,String) ] -> [ (Int, Match) ]
+matchSuffixes :: [String] -> [ (Int,String) ] -> [ (Int, Match) ]
 matchSuffixes [] _ = []
-matchSuffixes str [] = []
-matchSuffixes str ((soffset,suffix):suffixes) = 
-    case findMatch str suffix 0 soffset of
-        Nothing ->  matchSuffixes str suffixes
-        Just match@( moffset, prefixLength ) -> (soffset, match) : matchSuffixes str ( drop prefixLength suffixes )
+matchSuffixes _ [] = []
+matchSuffixes (prefix:prefixes) ((soffset,suffix):suffixes) = 
+    case findMatch prefix suffix 0 soffset of
+        Nothing ->  matchSuffixes prefixes suffixes
+        Just match@( moffset, prefixLength ) -> (soffset, match) : matchSuffixes ( drop prefixLength prefixes ) ( drop prefixLength suffixes )
 
 type Token = Either String Match
 
 toTokens :: String -> Int -> [(Int,Match)] -> [Token]
 toTokens [] _ _ = []
-toTokens str pos [] = [ Left $ drop pos str ]
+toTokens str pos [] = case drop pos str of
+                        "" -> []
+                        rest  -> [ Left rest ]
 toTokens str pos ((offset,m@(_,prefixLength)):matches) = Left ( take ( offset - pos ) $ drop pos str ) : Right m : toTokens str ( offset + prefixLength ) matches
 
 compress :: String -> [Token]
-compress "" = [Left ""]
+compress "" = []
 compress str = toTokens str 0 matches
     where 
+        prefixes = tail $ inits str
         suffixes = tail $ zip [0..] ( tails str )
-        matches = matchSuffixes str suffixes
+        matches = matchSuffixes prefixes suffixes
 
 decompress :: [Token] -> String
 decompress = decompress' ""
@@ -59,3 +62,5 @@ prop_inverse :: String -> Bool
 prop_inverse str = decompress ( compress str ) == str
 
 main = quickCheck prop_inverse
+
+--TODO: Rewrite using State.
