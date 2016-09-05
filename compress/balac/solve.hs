@@ -1,4 +1,5 @@
 import Data.List
+import Test.QuickCheck
 
 kMinMatch = 3
 
@@ -29,7 +30,7 @@ matchSuffixes str [] = []
 matchSuffixes str ((soffset,suffix):suffixes) = 
     case findMatch str suffix 0 soffset of
         Nothing ->  matchSuffixes str suffixes
-        Just match@( moffset, prefixLength ) -> (soffset, match) : ( matchSuffixes str $ drop prefixLength suffixes )
+        Just match@( moffset, prefixLength ) -> (soffset, match) : matchSuffixes str ( drop prefixLength suffixes )
 
 type Token = Either String Match
 
@@ -50,5 +51,11 @@ decompress = decompress' ""
 
 decompress' :: String -> [Token] -> String
 decompress' str [] = str
-decompress' str ((Left x):tokens) = decompress' ( str ++ x ) tokens
-decompress' str ((Right (mpos,mlen)):tokens) = decompress' ( str ++ take mlen ( drop mpos str ) ) tokens
+decompress' str ( Left x : tokens) = decompress' ( str ++ x ) tokens
+decompress' str ( Right (mpos,mlen) : tokens) = decompress' ( str ++ take mlen ( drop mpos str ) ) tokens
+
+
+prop_inverse :: String -> Bool
+prop_inverse str = decompress ( compress str ) == str
+
+main = quickCheck prop_inverse
