@@ -194,6 +194,15 @@ Since it's silly compression, don't bother with performance (a quadratic algorit
 
 Use [QuickCheck](https://hackage.haskell.org/package/QuickCheck) to test that decompressing a compressed input always works.
 
+Note that at least one solution so far has failed on the following test:
+
+```
+> compress "foo|bar|foobar"
+[Left "foo|bar|", Right (0,3), Left "bar"]
+```
+
+The correct output is `[Left "foo|bar|",Right (0,3),Right (4,3)]`.
+
 ### 8. Big integers `{bigint}`
 
 Implement a type for big integers (like `Integer`) that would be an instance of `Num` – that is, you'll have to write `(+)`, `(*)`, `abs`, `signum`, `fromInteger`, and either `(-)` or `negate`. It should also have instances of `Eq`, `Ord`, and `Show`.
