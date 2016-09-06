@@ -1,5 +1,9 @@
+import Data.List
 
 data BigInt = BI Bool [Int]
+
+bZero = BI True [0]
+bOne  = BI True [1]
 
 instance Show BigInt where
     show (BI p cs) = ( if p then "" else "-" ) ++ show cs
@@ -39,16 +43,22 @@ coeffShift _ [] = []
 coeffShift 0 cs = cs
 coeffShift n cs = 0 : coeffShift ( n - 1 ) cs
 
-coeffMultiply :: Int -> [Int] -> [Int]
-coeffMultiply _ [] = []
-coeffMultiply 0 _  = []
-coeffMultiply 1 cs = cs
-coeffMultiply n (x:xs)
-    | termProd < kBase = termProd : coeffMultiply n xs
-    | otherwise = mod termProd kBase : coeffSum ( coeffMultiply n xs ) [ termProd `div` kBase ]
+coeffMultScalar :: Int -> [Int] -> [Int]
+coeffMultScalar _ [] = []
+coeffMultScalar 0 _  = []
+coeffMultScalar 1 cs = cs
+coeffMultScalar n (x:xs)
+    | termProd < kBase = termProd : coeffMultScalar n xs
+    | otherwise = mod termProd kBase : coeffSum ( coeffMultScalar n xs ) [ termProd `div` kBase ]
     where
         termProd = n * x
 
+
+coeffMultiply :: [Int] -> [Int] -> [Int]
+coeffMultiply xs ys = foldl' coeffSum [0::Int] shiftedScalarProducts
+    where
+        scalarProducts = map (\y -> coeffMultScalar y xs ) ys
+        shiftedScalarProducts = map (\( coeff, shift ) -> coeffShift shift coeff ) $ zip scalarProducts [0..]
 
 dropZeros :: [Int] -> [Int] 
 dropZeros = reverse . dropWhile (== 0) . reverse
@@ -78,23 +88,24 @@ revCoeffsCompare (x:xs) (y:ys)
 coeffsCompare xs ys = revCoeffsCompare ( reverse xs ) ( reverse ys )
 
 instance Ord BigInt where
-     compare x@(BI posx xs) y@(BI posy ys) = if x == y
-                                                then EQ
-                                                else case (posx, posy) of
-                                                        (False,True) -> LT
-                                                        (True,False) -> GT
-                                                        (True,True)  -> coeffsCompare xs ys
-                                                        (False,False)-> coeffsCompare ys xs
+    compare (BI _ [0]) (BI _ [0]) = EQ
+    compare x@(BI posx xs) y@(BI posy ys) = case (posx, posy) of
+                                                (False,True) -> LT
+                                                (True,False) -> GT
+                                                (True,True)  -> coeffsCompare xs ys
+                                                (False,False)-> coeffsCompare ys xs
 
 instance Num BigInt where
     (+) x@(BI posx xs) y@(BI posy ys) = case (posx, posy) of
-                                        (True, True)    -> BI True ( coeffSum xs ys )
-                                        (True, False)   -> BI sign ( unsignedSub xs ys )
-                                        (False, True)   -> BI (not sign) ( unsignedSub xs ys )
-                                        (False, False)  -> BI False ( coeffSum xs ys )
-                                        where
-                                            sign = abs x >= abs y
-    (*) = undefined
+                                            (True, True)    -> BI True ( coeffSum xs ys )
+                                            (True, False)   -> BI sign ( unsignedSub xs ys )
+                                            (False, True)   -> BI (not sign) ( unsignedSub xs ys )
+                                            (False, False)  -> BI False ( coeffSum xs ys )
+                                            where
+                                                sign = abs x >= abs y
+    (*) (BI posx xs) (BI posy ys) = if posx == posy
+                                        then BI True ( coeffMultiply xs ys )
+                                        else BI False ( coeffMultiply xs ys )
     abs ( BI _ coeffs ) = BI True coeffs
     signum ( BI pos _  ) = BI pos [1]
     fromInteger x = BI pos coeffs
