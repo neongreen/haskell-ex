@@ -1,24 +1,18 @@
 
---  # Mergesort
+-- # Mergesort
 
---  Implement a mergesort
---  Invented by John von Neumann in 1945
---  Reference: https://en.wikipedia.org/wiki/Merge_sort
-
---  * Split the list into two sublists (in any way).
---  * Recursively sort the two sublists.
---  * Merge the sublists in such a way that if they are sorted,
---    the result is sorted too.
+-- Implement a mergesort
+-- Invented by John von Neumann in 1945
+-- Reference: https://en.wikipedia.org/wiki/Merge_sort
 
 
 
 module Main where
 
-main :: IO ()
-main = demo
+-- ## Demo
 
-demo :: IO ()
-demo = do
+main :: IO ()
+main = do
   print unsortedNumbers
   putStr "==> MERGESORT ==>\n"
   print (mergesort unsortedNumbers) where
@@ -27,53 +21,30 @@ demo = do
 
 
 
---  Assmeble our merge sort
+-- ## Program
 
 mergesort :: Ord a => [a] -> [a]
-mergesort = merge . sortTwo . split
+mergesort []  = []
+mergesort [x] = [x]
+mergesort xs  = go (mergesort xsLeft) (mergesort xsRight) where
+  (xsLeft, xsRight) = halveList xs
 
+  -- Do the actual sort-then-merge
 
-
---  Split the list into two even halves.
---  For odd-length lists the *second half is one-item longer*.
-
-split :: [a] -> ([a],[a])
-split list = splitAt middleIndex list where
-  middleIndex = div (length list) 2
-
-
-
---  Recursively sort the two sublists.
-
-sortTwo :: Ord a => ([a],[a]) -> ([a],[a])
-sortTwo (os,xs) = (sortOne os, sortOne xs) where
--- Not using a fold because we need _two_ items per iteration
-  sortOne []  = []
-  sortOne [v] = [v]
-  sortOne (v:x:zs)
-    | v > x     = xFirst
-    | v < x     = vFirst
-    | otherwise = vFirst -- Preserve input order
+  go :: Ord a => [a] -> [a] -> [a]
+  go xs [] = xs
+  go [] zs = zs
+  go xxs@(x:xs) zzs@(z:zs)
+    | x > z         = zFirst
+    | x < z         = xFirst
+    | otherwise     = xFirst -- Preserve order AKA "stable sort"
     where
-    xFirst = x : sortOne (v:zs)
-    vFirst = v : sortOne (x:zs)
-
--- NOTE Alternative Implementations
--- sortTwo (xs,zs) = (List.sort xs, List.sort zs)
--- sortTwo = uncurry (Func.on (,) List.sort)
+    zFirst = z : go xxs zs
+    xFirst = x : go xs zzs
 
 
 
---  Merge the two sublists such that if they are sorted
---  the result is sorted too.
+-- ## Helpers
 
-merge :: Ord a => ([a],[a]) -> [a]
-merge (xs,[])         = xs
-merge ([],zs)         = zs
-merge (xxs@(x:xs),zzs@(z:zs))
-  | x > z     = zFirst
-  | x < z     = xFirst
-  | otherwise = xFirst -- Preserve input order
-  where
-  zFirst = z : merge (xxs,zs)
-  xFirst = x : merge (xs,zzs)
+halveList :: [a] -> ([a],[a])
+halveList xs = splitAt (div (length xs) 2) xs
