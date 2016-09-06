@@ -149,8 +149,10 @@ For more info on the topic, see Oleg Kiselyov's [“Representing knowledge about
 Implement a [merge sort](https://en.wikipedia.org/wiki/Merge_sort):
 
 1. Split the list into two sublists (in any way).
-2. Recursively sort the two sublists.
-3. Merge the sublists in such a way that if they are sorted, the result is sorted too.
+2. Recursively sort the two sublists (using the function that you're writing, not a standard `Data.List.sort`).
+3. Merge the sublists.
+
+(This variant of the merge sort is called a “top-down sort”. There's also a bottom-up sort, which first splits the list into 1-sized sublists and then proceeds to merge them, two at at time, until after several passes there's only list left. You may implement a bottom-up sort in addition to the top-down sort, but it's not necessary.)
 
 ### 7. Silly compression `{compress}`
 
