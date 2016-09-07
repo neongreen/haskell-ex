@@ -1,3 +1,5 @@
+module BigInt ( BigInt, bigToInteger ) where
+
 import Data.List
 
 data BigInt = BI Bool [Int]
@@ -14,6 +16,11 @@ kBase = 10
 
 iBase :: Integer
 iBase = fromIntegral kBase
+
+bigToInteger :: BigInt -> Integer
+bigToInteger (BI pos xs) = sign * foldr (\term sum -> sum * iBase + ( fromIntegral term ) ) 0 xs
+    where
+        sign = if pos then 1 else -1
 
 toBase :: Integer -> Integer -> [Int]
 toBase x base
@@ -103,10 +110,13 @@ instance Num BigInt where
                                             (False, False)  -> BI False ( coeffSum xs ys )
                                             where
                                                 sign = abs x >= abs y
+    (*) (BI _ [0]) (BI _ _) = bZero
+    (*) (BI _ _) (BI _ [0]) = bZero
     (*) (BI posx xs) (BI posy ys) = if posx == posy
                                         then BI True ( coeffMultiply xs ys )
                                         else BI False ( coeffMultiply xs ys )
     abs ( BI _ coeffs ) = BI True coeffs
+    signum ( BI _ [0] )  = BI True [0]
     signum ( BI pos _  ) = BI pos [1]
     fromInteger x = BI pos coeffs
         where
