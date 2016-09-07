@@ -11,15 +11,15 @@ instance Arbitrary BigInt where
 
 main :: IO ()
 main = hspec $ do
-    describe "Conversion Identity" $ do
+    describe "Conversion Identity" $
         it "Satisfies conversion identity w.r.t Integers." $ property $
             \num -> bigToInteger ( fromInteger num :: BigInt ) == num
 
-    describe "Equality" $ do
+    describe "Equality" $
         it "Matches Integer equality." $ property $
             \a b -> ( (==) `on` ( fromInteger::Integer->BigInt ) ) a b == ( a == b )
 
-    describe "Ordering" $ do
+    describe "Ordering" $
         it "Matches Integer ordering." $ property $
             \a b -> ( compare `on` ( fromInteger :: Integer -> BigInt ) ) a b == compare a b
 
@@ -44,7 +44,7 @@ main = hspec $ do
             \a -> signum a * abs a == ( a :: BigInt )
 
         it "Satisfies identity x = negate . negate x." $ property $
-            \a -> ( a :: BigInt ) == ( negate . negate ) a 
+            \a -> ( a :: BigInt ) == negate ( negate a ) 
 
     describe "Subtraction" $ do
         it "Matches Integer subtraction." $ property $
