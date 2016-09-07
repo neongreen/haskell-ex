@@ -18,14 +18,14 @@ iBase :: Integer
 iBase = fromIntegral kBase
 
 bigToInteger :: BigInt -> Integer
-bigToInteger (BI pos xs) = sign * foldr (\term sum -> sum * iBase + ( fromIntegral term ) ) 0 xs
+bigToInteger (BI pos xs) = sign * foldr (\term sum -> sum * iBase + fromIntegral term ) 0 xs
     where
         sign = if pos then 1 else -1
 
 toBase :: Integer -> Integer -> [Int]
 toBase x base
     | x < base = [ fromIntegral x ]
-    | otherwise = ( fromIntegral $ mod x base ) : toBase ( x `div` base ) base
+    | otherwise = fromIntegral ( mod x base ) : toBase ( x `div` base ) base
 
 coeffSum :: [Int] -> [Int] -> [Int]
 coeffSum [] ys = ys
@@ -64,7 +64,7 @@ coeffMultScalar n (x:xs)
 coeffMultiply :: [Int] -> [Int] -> [Int]
 coeffMultiply xs ys = foldl' coeffSum [0::Int] shiftedScalarProducts
     where
-        scalarProducts = map (\y -> coeffMultScalar y xs ) ys
+        scalarProducts = map ( `coeffMultScalar` xs ) ys
         shiftedScalarProducts = map (\( coeff, shift ) -> coeffShift shift coeff ) $ zip scalarProducts [0..]
 
 dropZeros :: [Int] -> [Int] 
@@ -74,14 +74,12 @@ unsignedSub :: [Int] -> [Int] -> [Int]
 unsignedSub xs ys = 
     case coeffsCompare xs ys of
         EQ -> [0]
-        GT -> ( dropZeros $ coeffDiff xs ys )
-        LT -> ( dropZeros $ coeffDiff ys xs )
+        GT -> dropZeros $ coeffDiff xs ys
+        LT -> dropZeros $ coeffDiff ys xs
 
 instance Eq BigInt where
     (==) (BI _ [0]) (BI _ [0]) = True
-    (==) (BI posx xs) (BI posy ys) = if posx /= posy
-                                        then False
-                                        else xs == ys
+    (==) (BI posx xs) (BI posy ys) = ( posx == posy ) && xs == ys
 
 revCoeffsCompare :: [Int] -> [Int] -> Ordering
 revCoeffsCompare [] [] = EQ
@@ -123,8 +121,3 @@ instance Num BigInt where
             pos     = x >= 0
             coeffs  = toBase ( abs x ) ( fromIntegral kBase )
     negate (BI p cs) = BI ( not p ) cs  
-
-
-n1 = fromInteger 123 :: BigInt
-n2 = fromInteger 98 :: BigInt
-
