@@ -3,6 +3,7 @@ import Control.Monad
 import Control.Monad.Random
 import Graphics.Gnuplot.Simple
 import Data.Function
+import qualified Data.HashMap.Strict as Map
 
 type MArray = Array Int Int
 
@@ -12,18 +13,18 @@ createArray n = array (0, n-1) [ (i,i) | i <- [0..n-1] ]
 arrayLength :: MArray -> Int
 arrayLength = (+1) . snd . bounds 
 
-randomPermute :: (RandomGen g) => MArray -> Int -> Rand g MArray
+randomPermute :: (RandomGen g) => MArray -> Int -> Rand g [(Int,Int)]
 randomPermute arr pos
-    | pos == arrayLen - 1 = return arr
+    | pos == arrayLen - 1 = return $ assocs arr
     | otherwise = do
         newPos <- getRandomR ( 0, arrayLen - 1 )
         let val = arr ! pos
-        let newVal = arr ! newPos
+            newVal = arr ! newPos
         randomPermute ( arr // [ ( pos, newVal ), ( newPos, val ) ] ) ( pos + 1 )
     where
         arrayLen = arrayLength arr
 
-genPermutedArray :: (RandomGen g) => MArray -> Int -> Rand g [MArray]
+genPermutedArray :: (RandomGen g) => MArray -> Int -> Rand g [[(Int,Int)]]
 genPermutedArray arr count = replicateM count ( randomPermute arr 0 )
 
 kArrayLength :: Int
@@ -32,14 +33,18 @@ kArrayLength = 50
 kNumTrials :: Int
 kNumTrials = 100000
 
-probability :: [MArray] -> Int -> Int -> Float
-probability table x y = ((/) `on` fromIntegral) matchCount ( length table )
+createHashTable :: [(Int,Int)] -> Map.HashMap (Int,Int) Int
+createHashTable = foldr ( \tuple hashMap -> Map.insertWith (+) tuple 1 hashMap ) Map.empty
+
+probability :: Map.HashMap (Int,Int) Int -> Int -> Int -> Float
+probability table x y = ( (/) `on` fromIntegral ) matchCount kNumTrials
     where
-        matchCount = length $ filter (==x ) $ map ( ! y ) table
+        matchCount = Map.lookupDefault 0 (x,y) table
 
 main = do
-    permutedTable <- evalRandIO $ genPermutedArray ( createArray kArrayLength ) kNumTrials
-    let plotAttrs = [Plot3dType ColorMap, CornersToColor Corner1]
-    plotFunc3d [] plotAttrs [0..kArrayLength-1] [0..kArrayLength-1] $
-        \x y -> probability permutedTable x y
+    permutedArrays <- evalRandIO $ genPermutedArray ( createArray kArrayLength ) kNumTrials
+    let assocs = concat permutedArrays
+        table  = createHashTable assocs
+        plotAttrs = [Plot3dType ColorMap, CornersToColor Corner1]
+    plotFunc3d [ZRange (0,0.3)] plotAttrs [0..kArrayLength-1] [0..kArrayLength-1] $ \x y -> probability table x y
     getLine
