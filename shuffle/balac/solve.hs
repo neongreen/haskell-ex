@@ -39,12 +39,12 @@ createHashTable = foldr ( \tuple hashMap -> Map.insertWith (+) tuple 1 hashMap )
 probability :: Map.HashMap (Int,Int) Int -> Int -> Int -> Float
 probability table x y = ( (/) `on` fromIntegral ) matchCount kNumTrials
     where
-        matchCount = Map.lookupDefault 0 (x,y) table
+        matchCount = Map.lookupDefault 0 (y,x) table
 
 main = do
     permutedArrays <- evalRandIO $ genPermutedArray ( createArray kArrayLength ) kNumTrials
     let assocs = concat permutedArrays
         table  = createHashTable assocs
         plotAttrs = [Plot3dType ColorMap, CornersToColor Corner1]
-    plotFunc3d [ZRange (0,0.3)] plotAttrs [0..kArrayLength-1] [0..kArrayLength-1] $ \x y -> probability table x y
+    plotFunc3d [ZRange (0.014,0.028)] plotAttrs [0..kArrayLength-1] [0..kArrayLength-1] $ probability table
     getLine
