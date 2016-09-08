@@ -5,26 +5,39 @@
 
 
 
-module Compress where 
-
-main :: IO ()
-main = undefined
-
-type Compressed = [Either String (Int,Int)]
+module Compress where
 
 
+
+type Compressed = [CompressedChunk]
+type CompressedChunk = Either String CompressionRef
+type CompressionRef = (Int, Int)
+
+
+
+-- Undoing Compression --
+
+remove :: Compressed -> String
+remove = foldl go "" where
+
+  go :: String -> CompressedChunk -> String
+  go uncompressed (Right ref)   = deRef uncompressed ref
+  go uncompressed (Left string) = uncompressed ++ string
+
+
+  deRef :: String -> CompressionRef -> String
+  deRef uncompressed (i,len) = uncompressed ++ takeFrom i len uncompressed
+
+
+-- Doing Compression --
 
 put :: String -> Compressed
-put xs
-  | length xs < 6 = [Left xs]
-  | otherwise     = compressDo "" xs
+put ""                = []
+put string
+  | length string < 6 = [Left string]
+  | otherwise         = compressDo "" string
 
 
--- TODO
--- "hello hello man is this thing working or is this thing working?"
--- "hello man is thing workor?"
--- SHOULD BE:
--- "hello man is this thing working or?"
 
 compressDo :: String -> String -> Compressed
 compressDo behind ahead
@@ -42,20 +55,6 @@ compressDo behind ahead
 
 
 
-remove :: Compressed -> String
-remove = foldl go "" where
-  go uncompressed (Right ref)   = deRef uncompressed ref
-  go uncompressed (Left string) = uncompressed ++ string
-
-
-  deRef :: [a] -> (Int, Int) -> [a]
-  deRef uncompressed ref = uncompressed ++ takePart ref uncompressed
-
-  takePart :: (Int, Int) -> [a] -> [a]
-  takePart (i, len) = take len . snd . splitAt i
-
-
-
 findMatchStart :: Eq a => [a] -> [a] -> Maybe Int
 findMatchStart = findMatchStartDo 0 where
   findMatchStartDo i xs vs
@@ -68,3 +67,10 @@ findMatchStart = findMatchStartDo 0 where
 findMatchLength :: Eq a => [a] -> [a] -> Int
 findMatchLength matchBehind = -- eta reduce
   length . takeWhile (uncurry (==)) . zip matchBehind
+
+
+
+-- General Helpers --
+
+takeFrom :: Int -> Int -> [a] -> [a]
+takeFrom i len = take len . snd . splitAt i
