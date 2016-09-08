@@ -6,12 +6,14 @@ import Draw
 main :: IO ()
 main = do
   drawBoard
-  putStrLn "You move: "
-  pos <- getLine
+  promptMove
+
+promptMove :: IO()
+promptMove = do
+  pos <- drawPrompt
   case convertStrToPosition pos of
-    PositionUnsupported message -> do
-      putStrLn ("ERROR. " ++ message)
-      getLine
-      main
-    _ ->
-      putStrLn pos
+    PositionUnsupported _ ->
+      promptMove
+    pos -> do
+      drawToken Cross pos
+      promptMove
