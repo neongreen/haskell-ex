@@ -3,14 +3,18 @@ module Main where
 
 import Test.Hspec
 import qualified Compress
-import qualified Test.QuickCheck
+import qualified Test.QuickCheck as QC
 
 
 
 main :: IO ()
 main = hspec $ do
 
-  describe "Test.Hspec.it" $ do
+  describe "Compress" $ do
 
-    it "must return an Expectation" $ do
-      shouldBe 1 1
+    it "(remove . put) is identity" $ do
+      QC.property $ \string ->
+        let
+        f = Compress.remove . Compress.put
+        in
+        shouldBe (f string) string
