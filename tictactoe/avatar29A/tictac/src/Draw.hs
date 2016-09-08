@@ -1,6 +1,9 @@
 module Draw (BoardToken (..), BoardPosition (..),
              drawBoard,
-             drawToken, convertStrToPosition) where
+             drawToken,
+             drawPrompt,
+             drawError,
+             convertStrToPosition) where
 
 import System.Console.ANSI
 import Control.Monad
@@ -36,7 +39,7 @@ drawBoard = do
   drawXBorder 3 8
   drawXBorder 5 8
 
-  setCursorPosition 10 0
+  setPromptCursorPosition
 
 {- Draw borders -}
 
@@ -109,6 +112,18 @@ drawToken token pos = do
     positionY (Position 'B' _) = 4
     positionY (Position 'C' _) = 6
 
+drawPrompt :: IO String
+drawPrompt = do setPromptCursorPosition
+                putStrLn "You move: "
+                clearFromCursorToScreenEnd
+                getLine
+
+drawError :: String -> IO()
+drawError message = do
+  setPromptCursorPosition
+  clearFromCursorToScreenEnd
+  drawRedText message
+
 -- drawColorText draws text with was choosen color foreground
 drawColorText :: Color -> String -> IO()
 drawColorText c message = do
@@ -133,6 +148,10 @@ drawGreenText = drawColorText Green
 -- Cursor functions
 setDefaultCursorPosition :: IO()
 setDefaultCursorPosition = setCursorPosition 0 0
+
+setPromptCursorPosition :: IO()
+setPromptCursorPosition = setCursorPosition 10 0
+
 -- reset clear and discard all changes (color, foreground, etc)
 reset :: IO()
 reset = setSGR [Reset]
@@ -141,7 +160,7 @@ convertStrToPosition :: String -> BoardPosition
 convertStrToPosition [y, x]
   | isX x && isY y =
     Position y (digitToInt x)
-  | otherwise = PositionUnsupported "Expected {NM}, where N in ['A', 'B', 'C'] and M in ['1', '2', '3'], for instance A1, B3, etc."
+  | otherwise = PositionUnsupported unsupportedErrorMessage
   where
     isX :: Char -> Bool
     isX ch = checkInput ch ('1', '3')
@@ -154,6 +173,12 @@ convertStrToPosition [y, x]
       let code = ord ch
       in
         (code >= ord from) && (code <= ord to)
+
+convertStrToPosition _ =
+    PositionUnsupported unsupportedErrorMessage
+
+unsupportedErrorMessage :: String
+unsupportedErrorMessage = "Expected {NM}, where N in ['A', 'B', 'C'] and M in ['1', '2', '3'], for instance A1, B3, etc."
 
 -- ln adds to endline - '\n'
 ln :: String -> String
