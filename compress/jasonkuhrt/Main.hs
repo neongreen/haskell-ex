@@ -5,108 +5,66 @@
 
 
 
--- About Minimum Compressable String
--- Six characters, example: "foofoo"
--- This is because:
--- * We compress repeating subpatterns.
--- * minRepeat: A repeating subpattern is one that shows up 2+ times.
--- * minSubstringSize: The lookup notation we use for compression has its own
---   size which dictates the need for substrings of 3+ chars otherwise the
---   compression actually _increses_ the size.
--- * So, from this we get the simple equation:
---   minSubstringSize * minRepeat = 6
-
 module Main where
 
 main :: IO ()
 main = undefined
 
--- compress :: String -> String
--- compress s
---   | length s < 6 = s -- Refer to "Minimum Compressable String"
---   | otherwise    = compressDo base pool rest
---   where
---   (base, afterBase) =  splitAt 3 s
---   (pool, rest) = splitAt 3 afterBase
-
-
--- compressDo :: String -> String -> String -> String
--- compressDo base pool (c:s) =
---   checkMatch base (pool ++ [c])
-
-
--- Recusively roll pool into base, checking for a subsequence of the dwindling pool in base during each recursion.
-
-checkMatch :: String -> String -> String
-checkMatch _ ""         = ""
-checkMatch base pool@(c:s)
-  | length pool < 3     = ""
-  | length base < length pool =
-    let (base', pool') = balanceLists base pool
-    in checkMatch base' pool'
-  | isSubsequence base pool = pool
-  | otherwise               = checkMatch (base ++ [c]) s
-
-
--- Find zs within xs
-
-isSubsequence :: String -> String -> Bool
-isSubsequence "" _      = False
-isSubsequence _ ""      = False
-isSubsequence xs zs
-  | xsChunk == zs       = True -- TODO continue until False
-  | xsLength > zsLength = isSubsequence (tail xs) zs
-  | otherwise           = False
-  where
-  xsChunk = take zsLength xs
-  xsLength = length xs
-  zsLength = length zs
+type Compressed = [Either String (Int,Int)]
 
 
 
-balanceLists :: [a] -> [a] -> ([a],[a])
-balanceLists a b = (a ++ move, stay) where
-  (move, stay) = splitAt (ceiling $ realToFrac (abs (length a - length b)) / (2 :: Float)) b
+compress :: String -> Compressed
+compress xs
+  | length xs < 6 = [Left xs]
+  | otherwise     = compressDo "" xs
+
+
+-- TODO
+-- "hello hello man is this thing working or is this thing working?"
+-- "hello man is thing workor?"
+-- SHOULD BE:
+-- "hello man is this thing working or?"
+
+compressDo :: String -> String -> Compressed
+compressDo behind ahead
+  | length ahead < 3 = [Left ahead]
+  | otherwise        =
+    case findMatchStart behind (take 3 ahead) of
+    Nothing ->
+      Left (take 1 ahead) :
+      compressDo (behind ++ take 1 ahead) (drop 1 ahead)
+    Just i ->
+      let len = findMatchLength (snd . splitAt i $ behind) ahead
+          behindNow = behind ++ take len ahead
+          aheadNow = drop len ahead
+      in Right (i,len) : compressDo behindNow aheadNow
 
 
 
--- Consider a string. No, consider a different string.
+uncompress :: Compressed -> String
+uncompress = foldl go "" where
+  go uncompressed (Right ref)   = deRef uncompressed ref
+  go uncompressed (Left string) = uncompressed ++ string
 
--- We are going to iterate through it. Step by step the values will be as
--- follows (Refer to Minimum Compressable String for why we start from "foobar"):
 
--- now                prev
---------------------------
+  deRef :: [a] -> (Int, Int) -> [a]
+  deRef uncompressed ref = uncompressed ++ takePart ref uncompressed
 
--- fooba+r
--- is "bar" in "foo"
+  takePart :: (Int, Int) -> [a] -> [a]
+  takePart (i, len) = take len . snd . splitAt i
 
--- foobar+f
--- TOO_LONG: "barf" in "foo"?
--- "arf" in "foob"?
 
--- foobarf+o
--- TOO_LONG: "barfo" in "foo"?
--- "arfo" in "foob"?
--- "rfo" in "fooba"?
 
--- foobarfo+o
--- TOO_LONG: "barfoo" in "foo"?
--- TOO_LONG: "arfoo" in "foob"?
--- "rfoo" in "fooba"?
--- YES: "foo" in "foobar"?
+findMatchStart :: Eq a => [a] -> [a] -> Maybe Int
+findMatchStart = findMatchStartDo 0 where
+  findMatchStartDo i xs vs
+    | take (length vs) xs == vs = Just i
+    | length xs < length vs     = Nothing
+    | otherwise                 = findMatchStartDo (i + 1) (tail xs) vs
 
--- YES: Don't stop yet. Keep taking up until NO.
--- YES: Continue next from here.
 
--- foobarfoo+b
--- YES: "foob" in "foobar"
 
--- foobarfoob+a
--- YES: "fooba" in "foobar"
-
--- foobarfooba+r
--- YES: "foobar" in "foobar"
-
--- END
--- END_YES: Deal with lingering yes
+findMatchLength :: Eq a => [a] -> [a] -> Int
+findMatchLength matchBehind = -- eta reduce
+  length . takeWhile (uncurry (==)) . zip matchBehind
