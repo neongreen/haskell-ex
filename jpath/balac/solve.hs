@@ -5,6 +5,7 @@ import Control.Monad (void)
 import qualified Data.ByteString.Lazy as Lazy
 import Data.Aeson
 import qualified Data.Aeson.Types as AT
+import Data.List
 import Data.Maybe
 import qualified Data.Set as S
 import System.IO
@@ -18,9 +19,9 @@ import qualified Text.Megaparsec.Lexer as L
 data JPOperator = OpRoot 
                 | OpCurrent
                 | OpChild String
-                | OpRecursive JPOperator
-                | OpAll
-                | OpSubscriptSet ( S.Set Integer )
+                | OpRecursive
+                | OpAllChildren
+                | OpSubscriptSet [Integer]
                 deriving( Show, Eq )
 
 sc :: Parser ()
@@ -35,29 +36,60 @@ lexeme = L.lexeme sc
 integer :: Parser Integer
 integer = lexeme L.integer
 
-squares :: Parser a -> Parser a
-squares = between (symbol "[") (symbol "]")
+inSquares :: Parser a -> Parser a
+inSquares = between (symbol "[") (symbol "]")
 
 dot :: Parser Char
 dot = C.char '.'
 
-root :: Parser Char
-root = C.char '$'
+semi :: Parser Char
+semi = C.char ','
 
-current :: Parser Char
-current = C.char '@'
+colon :: Parser Char
+colon = C.char ':'
 
 identifier :: Parser String
 identifier = lexeme $ (:) <$> C.letterChar <*> many C.alphaNumChar
 
 rootOp :: Parser JPOperator
-rootOp = root >> return OpRoot
+rootOp = const OpRoot <$> C.char '$'
 
 currentOp :: Parser JPOperator
-currentOp = current >> return OpCurrent
+currentOp = const OpCurrent <$> C.char '@'
+
+childOp :: Parser JPOperator
+childOp = OpChild <$> ( ( dot >> identifier ) <|> inSquares identifier <|> identifier )
+
+allChildrenOp :: Parser JPOperator
+allChildrenOp = const OpAllChildren <$> ( C.char '*' <|> inSquares ( C.char '*' ) <|> ( dot >> C.char '*' ) )
+
+parseSubscriptNum :: Parser [Integer]
+parseSubscriptNum = return <$> inSquares integer
+
+parseSubscriptUnion :: Parser [Integer]
+parseSubscriptUnion = nub <$> ( inSquares $ sepBy1 integer semi )
+
+firstNIndices :: Integer -> [Integer]
+firstNIndices n = [0 .. n-1]
+
+indicesRange :: Parser [Integer]
+indicesRange = do
+    fromIndex <- integer
+    _ <- colon
+    toIndex <- integer
+    return [ fromIndex .. toIndex ]
+
+parseSubscriptSlice :: Parser [Integer]
+parseSubscriptSlice = inSquares ( ( firstNIndices <$> ( colon >> integer ) ) <|> indicesRange ) 
+
+subscriptSetOp :: Parser JPOperator
+subscriptSetOp = OpSubscriptSet <$> ( try parseSubscriptNum <|> try parseSubscriptUnion <|> try parseSubscriptSlice )
+
+recursiveOp :: Parser JPOperator
+recursiveOp = const OpRecursive <$> ( dot >> dot )
 
 anyOp :: Parser JPOperator
-anyOp = rootOp <|> currentOp
+anyOp = rootOp <|> currentOp <|> try allChildrenOp <|> try childOp <|> try subscriptSetOp <|> try recursiveOp
 
 parseOperators :: Parser [JPOperator]
 parseOperators = lexeme $ some anyOp
