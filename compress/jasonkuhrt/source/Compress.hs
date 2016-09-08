@@ -32,10 +32,8 @@ remove = foldl go "" where
 -- Doing Compression --
 
 put :: String -> Compressed
-put ""                = []
-put string
-  | length string < 6 = [Left string]
-  | otherwise         = compressDo "" string
+put ""     = []
+put string = compressDo "" string
 
 
 
