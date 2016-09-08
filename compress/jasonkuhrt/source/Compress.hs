@@ -38,18 +38,31 @@ put string = compressDo "" string
 
 
 compressDo :: String -> String -> Compressed
+compressDo behind "" = []
 compressDo behind ahead
   | length ahead < 3 = [Left ahead]
   | otherwise        =
     case findMatchStart behind (take 3 ahead) of
     Nothing ->
-      Left (take 1 ahead) :
-      compressDo (behind ++ take 1 ahead) (drop 1 ahead)
+      let n = lengthUntilMatchStart behind ahead
+      in  Left (take n ahead) :
+      compressDo (behind ++ take n ahead) (drop n ahead)
     Just i ->
       let len = findMatchLength (snd . splitAt i $ behind) ahead
           behindNow = behind ++ take len ahead
           aheadNow = drop len ahead
       in Right (i,len) : compressDo behindNow aheadNow
+
+
+
+lengthUntilMatchStart :: String -> String -> Int
+lengthUntilMatchStart = lengthUntilMatchStartDo 0 where
+
+  lengthUntilMatchStartDo i _ []         = i
+  lengthUntilMatchStartDo i behind ahead = case findMatchStart behind ahead of
+    Nothing ->
+      lengthUntilMatchStartDo (i + 1) (behind ++ take 1 ahead) (drop 1 ahead)
+    Just _ -> i
 
 
 
