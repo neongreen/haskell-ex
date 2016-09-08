@@ -5,7 +5,7 @@
 
 
 
-module Main where
+module Compress where 
 
 main :: IO ()
 main = undefined
@@ -14,8 +14,8 @@ type Compressed = [Either String (Int,Int)]
 
 
 
-compress :: String -> Compressed
-compress xs
+put :: String -> Compressed
+put xs
   | length xs < 6 = [Left xs]
   | otherwise     = compressDo "" xs
 
@@ -42,8 +42,8 @@ compressDo behind ahead
 
 
 
-uncompress :: Compressed -> String
-uncompress = foldl go "" where
+remove :: Compressed -> String
+remove = foldl go "" where
   go uncompressed (Right ref)   = deRef uncompressed ref
   go uncompressed (Left string) = uncompressed ++ string
 
