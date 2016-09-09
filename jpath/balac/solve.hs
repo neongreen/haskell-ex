@@ -134,24 +134,24 @@ applyOperatorsToVec ops childrenVec = do
     results <- mapM ( applyJPOperator ops ) childrenVec
     return $ Array results 
 
-arrayWrap :: Value -> Value
-arrayWrap a@(Array v) = a
-arrayWrap v = Array ( V.singleton v )
-
 valueToVector :: Value -> V.Vector Value
 valueToVector (Array v) = v
 valueToVector v = V.singleton v
+
 
 applyOperatorsRecursively :: [JPOperator] -> Value -> AT.Parser ( Value )
 applyOperatorsRecursively ops value = do
     curResult <- optional( valueToVector <$> applyJPOperator ops value )
     children <- getAllChildren value
     rawChildResults <- mapM ( applyOperatorsRecursively ops ) children
-    let results = V.filter (/= Array (V.empty)) ( V.concat [ optToVec curResult, rawChildResults ] )
-    return $ Array results
+    let flattened = V.foldl' flatten V.empty ( optToVec curResult V.++ rawChildResults )
+    let result = V.filter (/= Array V.empty) flattened
+    return ( Array result )
     where
         optToVec Nothing = V.empty
-        optToVec (Just v)= v 
+        optToVec (Just v)= v
+        flatten accum (Array v) = accum V.++ v
+        flatten accum x = accum V.++ ( V.singleton x )
 
 
 applyJPOperator :: [JPOperator] -> Value -> AT.Parser Value
@@ -164,9 +164,6 @@ applyJPOperator (op:ops) value = case op of
     OpAllChildren           -> getAllChildren value >>= applyOperatorsToVec ops
     OpRecursive             -> applyOperatorsRecursively ops value
 
-
-printValue :: Value -> IO ()
-printValue = undefined
 
 main = do
     hSetEncoding stdout utf8
