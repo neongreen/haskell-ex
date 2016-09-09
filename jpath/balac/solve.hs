@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-} 
 
 import Control.Applicative (empty)
 import Control.Monad (void)
@@ -12,6 +13,7 @@ import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Vector as V
+import Debug.Trace
 import System.Environment
 import System.IO
 import Text.Megaparsec
@@ -116,20 +118,41 @@ getChildByKey :: String -> Value -> AT.Parser Value
 getChildByKey key = withObject "object" $ \obj ->
                         obj .: T.pack key
 
-getChildrenByIndices :: [Integer] -> Value -> AT.Parser Value
+getChildrenByIndices :: [Integer] -> Value -> AT.Parser ( V.Vector Value )
 getChildrenByIndices indices = withArray "array" $ \arr -> do
                                     let maybeChildren = map ( ( arr V.!? ) . fromInteger ) indices
                                     let children = map fromJust $ filter isJust maybeChildren
-                                    return $ Array ( V.fromList children )
+                                    return $ V.fromList children
 
-getAllChildren :: Value -> AT.Parser Value
-getAllChildren (Object obj) = return $ Array ( V.fromList ( HM.elems obj ) )
-getAllChildren a@(Array _)  = return a
+getAllChildren :: Value -> AT.Parser ( V.Vector Value )
+getAllChildren (Object obj) = return $ V.fromList ( HM.elems obj )
+getAllChildren (Array v)  = return v
+getAllChildren _ = return V.empty
 
-applyOperatorsToArray :: [JPOperator] -> Value -> AT.Parser Value
-applyOperatorsToArray ops ( Array childrenVec ) = do
+applyOperatorsToVec :: [JPOperator] -> ( V.Vector Value ) -> AT.Parser Value
+applyOperatorsToVec ops childrenVec = do
     results <- mapM ( applyJPOperator ops ) childrenVec
     return $ Array results 
+
+arrayWrap :: Value -> Value
+arrayWrap a@(Array v) = a
+arrayWrap v = Array ( V.singleton v )
+
+valueToVector :: Value -> V.Vector Value
+valueToVector (Array v) = v
+valueToVector v = V.singleton v
+
+applyOperatorsRecursively :: [JPOperator] -> Value -> AT.Parser ( Value )
+applyOperatorsRecursively ops value = do
+    curResult <- optional( valueToVector <$> applyJPOperator ops value )
+    children <- getAllChildren value
+    rawChildResults <- mapM ( applyOperatorsRecursively ops ) children
+    let results = V.filter (/= Array (V.empty)) ( V.concat [ optToVec curResult, rawChildResults ] )
+    return $ Array results
+    where
+        optToVec Nothing = V.empty
+        optToVec (Just v)= v 
+
 
 applyJPOperator :: [JPOperator] -> Value -> AT.Parser Value
 applyJPOperator [] value = return value
@@ -137,9 +160,10 @@ applyJPOperator (op:ops) value = case op of
     OpRoot                  -> applyJPOperator ops value
     OpCurrent               -> applyJPOperator ops value
     OpChild key             -> getChildByKey key value >>= applyJPOperator ops
-    OpSubscriptSet indices  -> getChildrenByIndices indices value >>= applyOperatorsToArray ops
-    OpAllChildren           -> getAllChildren value >>= applyOperatorsToArray ops
-    --OpRecursive             -> 
+    OpSubscriptSet indices  -> getChildrenByIndices indices value >>= applyOperatorsToVec ops
+    OpAllChildren           -> getAllChildren value >>= applyOperatorsToVec ops
+    OpRecursive             -> applyOperatorsRecursively ops value
+
 
 printValue :: Value -> IO ()
 printValue = undefined
