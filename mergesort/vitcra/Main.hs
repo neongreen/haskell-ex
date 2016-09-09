@@ -1,6 +1,5 @@
 module Main where
 
-import           Data.Function (on)
 import           System.Random
 
 mergesort :: Ord a => [a] -> [a]
