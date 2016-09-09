@@ -4,6 +4,7 @@ import Control.Applicative (empty)
 import Control.Monad (void)
 import qualified Data.ByteString.Lazy as Lazy
 import Data.Aeson
+import Data.Aeson.Encode.Pretty
 import qualified Data.Aeson.Types as AT
 import qualified Data.HashMap.Strict as HM
 import Data.List
@@ -155,4 +156,4 @@ main = do
         Right ops -> do
             case AT.parseEither ( applyJPOperator ops ) jsonValue of
                 Left err -> print $ "Error: " ++ err
-                Right sel -> print sel
+                Right sel -> Lazy.putStr $ encodePretty sel
