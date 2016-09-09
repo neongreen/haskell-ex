@@ -123,6 +123,7 @@ getChildrenByIndices indices = withArray "array" $ \arr -> do
 
 getAllChildren :: Value -> AT.Parser Value
 getAllChildren (Object obj) = return $ Array ( V.fromList ( HM.elems obj ) )
+getAllChildren a@(Array _)  = return a
 
 applyOperatorsToArray :: [JPOperator] -> Value -> AT.Parser Value
 applyOperatorsToArray ops ( Array childrenVec ) = do
@@ -137,6 +138,7 @@ applyJPOperator (op:ops) value = case op of
     OpChild key             -> getChildByKey key value >>= applyJPOperator ops
     OpSubscriptSet indices  -> getChildrenByIndices indices value >>= applyOperatorsToArray ops
     OpAllChildren           -> getAllChildren value >>= applyOperatorsToArray ops
+    --OpRecursive             -> 
 
 printValue :: Value -> IO ()
 printValue = undefined
