@@ -3,6 +3,33 @@
 -- Given a string, replace repeating substrings (of length >= 3) with a lookup
 -- to the first instance. Performance is not a goal.
 
+-- string
+--
+-- (Just i) progress
+  -- delta = advanceWhileMatch i behind ahead
+  -- Right (i, delta) : go Nothing (progress + delta)
+-- Nothing progress
+  -- (matchStart, delta) = advanceWhileMatchNot behind ahead
+  -- Left (take delta ahead) : go (Just matchIndex) (progress + delta)
+
+-- FIND A MATCH START
+-- blahfoobar |blahfoogoo
+-- ^^^         ^^^
+--
+-- FIND A MATCH END
+-- blahfoobar blah|foogoo
+--     ^           ^
+-- blahfoobar blahf|oogoo
+--      ^           ^
+-- blahfoobar blahfo|ogoo
+--       ^           ^
+-- blahfoobar blahfoo|goo
+--        ^           ^
+--
+-- RESTART. Reset The
+-- blahfoobar blahfoo|goo
+--        ^^^         xxx
+
 
 
 module Compress where
@@ -42,27 +69,26 @@ put string = compressDo 0 where
     | length ahead < 3 = [Left ahead]
     | otherwise        =
       case findMatchStart behind (take 3 ahead) of
+      Just matchStart ->
+        let delta = advanceWhileMatch matchStart behind ahead
+        in  Right (matchStart, delta) : compressDo (progress + delta)
       Nothing ->
-        let len = findLengthMatchless behind ahead
+        let (matchStart, len) = advanceWhileMatchNot behind ahead
         in  Left (take len ahead) : compressDo (progress + len)
-      Just i ->
-        let len = findLengthMatch (snd . splitAt i $ behind) ahead
-        in  Right (i, len) : compressDo (progress + len)
     where
     (behind, ahead) = splitAt progress string
 
 
 
-findLengthMatchless :: String -> String -> Int
-findLengthMatchless = findLengthMatchlessDo 0 where
+advanceWhileMatchNot :: String -> String -> (Int, Int)
+advanceWhileMatchNot = go 0 where
 
-  findLengthMatchlessDo i _ []         = i
-  findLengthMatchlessDo i behind ahead =
+  go delta _ []         = (-1, delta)
+  go delta behind ahead =
     case findMatchStart behind (take 3 ahead) of
     Nothing ->
-      findLengthMatchlessDo (i + 1) (behind ++ take 1 ahead) (drop 1 ahead)
-    Just _ ->
-      i
+      go (delta + 1) (behind ++ take 1 ahead) (drop 1 ahead)
+    Just matchStart -> (matchStart, delta)
 
 
 
@@ -75,13 +101,21 @@ findMatchStart = findMatchStartDo 0 where
 
 
 
-findLengthMatch :: Eq a => [a] -> [a] -> Int
-findLengthMatch matchBehind = -- eta reduce
-  length . takeWhile (uncurry (==)) . zip matchBehind
+advanceWhileMatch :: Int -> String -> String -> Int
+advanceWhileMatch matchStart behind ahead =
+  length $ takeWhileEqual (drop matchStart behind) ahead
+
 
 
 
 -- General Helpers --
 
+takeWhileEqual :: Eq a => [a] -> [a] -> [a]
+takeWhileEqual xs zs =
+  fmap fst . takeWhile (uncurry (==)) $ zip xs zs
+
 takeFrom :: Int -> Int -> [a] -> [a]
 takeFrom i len = take len . snd . splitAt i
+
+slice :: Int -> Int -> [a] -> [a]
+slice i size = take size . drop i
