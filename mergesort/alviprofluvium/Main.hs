@@ -11,5 +11,5 @@ merge :: (Ord a) => [a] -> [a] -> [a]
 merge [] b = b
 merge a [] = a
 merge a@(x:xs) b@(y:ys)
-  | x < y     = x : merge xs b
-  | otherwise = y : merge a ys
+  | x <= y     = x : merge xs b
+  | otherwise  = y : merge a ys
