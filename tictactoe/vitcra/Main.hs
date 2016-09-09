@@ -10,7 +10,7 @@ import           Data.Maybe
 import           Data.Vector         (Vector)
 import qualified Data.Vector         as V
 import           System.Console.ANSI
-import System.IO
+import           System.IO
 
 data Player = Computer | Human deriving (Enum, Eq)
 data Outcome = Lose | Draw | Win deriving (Eq, Ord, Show)
@@ -30,23 +30,19 @@ tictactoes board = diag1:diag2:(rows ++ cols) where
   diag1 = M.getDiag board
   diag2 = V.fromList $ map (board M.!) $ zip [1..m] [n, n-1..1]
 
-evalTriplet :: Vector (Maybe Player) -> Outcome
-evalTriplet ts = case mplayer of
-  (Just p) -> goal p
-  Nothing -> Draw
+evalTriplet :: Vector (Maybe Player) -> Maybe Outcome
+evalTriplet ts = goal <$> mplayer
   where
     first = V.head ts
     mplayer = if V.all (== first) ts then first else Nothing
 
 evalBoard :: Board -> Maybe Outcome
-evalBoard board = case os of
+evalBoard board = case mapMaybe evalTriplet (tictactoes board) of
   [] -> if fullBoard board then Just Draw else Nothing
   (o:_) -> Just o
-  where
-    os = dropWhile (== Draw) $ map evalTriplet $ tictactoes board
 
 fullBoard :: Board -> Bool
-fullBoard = (Nothing `notElem`) . M.toList
+fullBoard = all isJust
 
 -- | Given a board, return all possible boards after Player move
 nextMoves :: Player -> Board -> [Board]
@@ -61,22 +57,43 @@ theOther Computer = Human
 theOther Human = Computer
 
 minimax :: Board -> Board
+-- | First check if board is full, if yes just return it,
+-- | otherwise go on with the actual minimax algorithm.
 minimax board = if fullBoard board then board else snd $ helper Computer board
   where
+    -- | Given current Board, returns the Board with Player's next best move
+    -- | and the expected end Outcome.
     helper :: Player -> Board -> (Outcome, Board)
     helper player board = best where
+      -- | The computer maximizes the gain, the Human minimizes the loss.
       pick = case player of
         Computer -> maximumBy
         Human -> minimumBy
 
+      -- | Evaluate current state of all boards after all next possible moves.
+      -- | See if there's already a Win for Computer or Lose for Human, (i.e.
+      -- | end of game); if yes, return that and stop the unnecessary minimax.
+      -- | Note 1: the stop occurs a bit down below, but Haskell being lazy ...
+      -- | Note 2: If Computer moves, end of game (if any) cannot be Lose,
+      -- | if Human moves, end of game cannot be Win.
       ebs = map (\b -> (evalBoard b, b)) $ nextMoves player board
       (greedy, undecided) = partition ((== (Just $ goal player)) . fst) ebs
 
+      -- | In case there's no immediate end of game, re-evaluate the boards,
+      -- | using minimax.
       rebs = map reeval undecided
       reeval (o, b) = case o of
+        -- | This case will rarely happen, e.g. Just Draw in the last move.
         Just smth -> (smth, b)
+        -- | This move has no immediate outcome, so start the minimax.
+        -- | Drop the board, because we do not need the board ofter
+        -- | the Other Player has moved, rather the one after our own move.
         Nothing -> (fst $ helper (theOther player) b, b)
 
+      -- | Here all boards (possible next moves) have an outcome,
+      -- | so we can pick the best one. First, if there was already
+      -- | an outcome without running minimax, return that one,
+      -- | if not, then the one resulted by minimax.
       best = case greedy of
         ((Just o, b):_) -> (o, b)
         [] -> pick (compare `on` fst) rebs
