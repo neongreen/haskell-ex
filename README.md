@@ -236,6 +236,8 @@ main = do
   getLine  -- wait (otherwise the plot window will close)
 ```
 
+(On Windows, you might have to rename the gnuplot binary to “pgnuplot”.)
+
 (If you want to check yourself, here's a plot I got for n=50 and 100000 trials: <http://imgur.com/9eHtiqJ>. If you want to know more about shuffles, read about the [Fisher–Yates shuffle](https://en.wikipedia.org/wiki/Fisher–Yates_shuffle).)
 
 (You can, if you want, also try implementing another often-used shuffle – a quicksort with the comparison step randomly returning `LT`, `EQ` or `GT` – and checking whether it's biased or not.)
