@@ -70,8 +70,18 @@ compress s = consolidate $ go [] s
                   else Right (i,n) : go (p ++ match) rest
 
 decompress :: [Token] -> String
+decompress xs = uncompressed
+  where
+    uncompressed = concatMap deRef xs
+    deRef (Left x) = x
+    deRef (Right (i,n)) = take n (drop i uncompressed)
+
+{- A slower version without tying the knot:
+
+decompress :: [Token] -> String
 decompress s = go [] s
   where
     go p [] = p
     go p (Left x      : xs) = go (p ++ x) xs
     go p (Right (i,n) : xs) = go (p ++ take n (drop i p)) xs
+-}
