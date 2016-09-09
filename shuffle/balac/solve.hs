@@ -34,7 +34,7 @@ kNumTrials :: Int
 kNumTrials = 100000
 
 createHashTable :: [(Int,Int)] -> Map.HashMap (Int,Int) Int
-createHashTable = foldr ( \tuple hashMap -> Map.insertWith (+) tuple 1 hashMap ) Map.empty
+createHashTable xs = Map.fromListWith (+) ( zip xs ( repeat 1 ) )
 
 probability :: Map.HashMap (Int,Int) Int -> Int -> Int -> Float
 probability table x y = ( (/) `on` fromIntegral ) matchCount kNumTrials
