@@ -7,7 +7,7 @@ import Data.Function
 import Control.Monad
 
 instance Arbitrary BigInt where
-    arbitrary = ( fromInteger :: Integer -> BigInt ) <$> arbitrary
+    arbitrary = fromInteger <$> arbitrary
 
 main :: IO ()
 main = hspec $ do
