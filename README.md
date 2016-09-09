@@ -194,14 +194,15 @@ Since it's silly compression, don't bother with performance (a quadratic algorit
 
 Use [QuickCheck](https://hackage.haskell.org/package/QuickCheck) to test that decompressing a compressed input always works.
 
-Note that at least one solution so far has failed on the following test:
+Be sure to test your solution on these tricky tests:
 
 ```
 > compress "foo|bar|foobar"
-[Left "foo|bar|", Right (0,3), Left "bar"]
-```
+[Left "foo|bar|",Right (0,3),Right (4,3)]
 
-The correct output is `[Left "foo|bar|",Right (0,3),Right (4,3)]`.
+> compress "foo|foox:foox"
+[Left "foo|",Right (0,3),Left "x:",Right (4,4)]
+```
 
 ### 8. Big integers `{bigint}`
 
