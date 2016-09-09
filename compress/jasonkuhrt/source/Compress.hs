@@ -3,33 +3,6 @@
 -- Given a string, replace repeating substrings (of length >= 3) with a lookup
 -- to the first instance. Performance is not a goal.
 
--- string
---
--- (Just i) progress
-  -- delta = advanceWhileMatch i behind ahead
-  -- Right (i, delta) : go Nothing (progress + delta)
--- Nothing progress
-  -- (matchStart, delta) = advanceWhileMatchNot behind ahead
-  -- Left (take delta ahead) : go (Just matchIndex) (progress + delta)
-
--- FIND A MATCH START
--- blahfoobar |blahfoogoo
--- ^^^         ^^^
---
--- FIND A MATCH END
--- blahfoobar blah|foogoo
---     ^           ^
--- blahfoobar blahf|oogoo
---      ^           ^
--- blahfoobar blahfo|ogoo
---       ^           ^
--- blahfoobar blahfoo|goo
---        ^           ^
---
--- RESTART. Reset The
--- blahfoobar blahfoo|goo
---        ^^^         xxx
-
 
 
 module Compress where
@@ -61,61 +34,74 @@ remove = foldl go "" where
 
 put :: String -> Compressed
 put ""     = []
-put string = compressDo 0 where
+put string = go (-1) 0 where
 
-  compressDo :: Int -> Compressed
-  compressDo progress
-    | null ahead       = []
-    | length ahead < 3 = [Left ahead]
-    | otherwise        =
-      case findMatchStart behind (take 3 ahead) of
-      Just matchStart ->
-        let delta = advanceWhileMatch matchStart behind ahead
-        in  Right (matchStart, delta) : compressDo (progress + delta)
-      Nothing ->
-        let (matchStart, len) = advanceWhileMatchNot behind ahead
-        in  Left (take len ahead) : compressDo (progress + len)
+  end = length string
+
+  go :: Int -> Int -> Compressed
+  go mmsi progress -- mmsi = maybeMatchStartIndex
+    | end == progress    = []
+    | end - progress < 3 = [Left trackAhead]
+    | mmsi >= 0          =
+      let delta = advanceWhileMatch mmsi track
+      in  Right (mmsi, delta) : go (-1) (progress + delta)
+    | otherwise          =
+      let (matchStart, delta) = advanceWhileMatchNot track
+      in  Left (take delta trackAhead) : go matchStart (progress + delta)
     where
-    (behind, ahead) = splitAt progress string
+    track = splitAt progress string
+    (_, trackAhead) = track
 
 
 
-advanceWhileMatchNot :: String -> String -> (Int, Int)
+advanceWhileMatchNot :: (String, String) -> (Int, Int)
 advanceWhileMatchNot = go 0 where
 
-  go delta _ []         = (-1, delta)
-  go delta behind ahead =
+  go delta (_, [])               = (-1, delta)
+  go delta track@(behind, ahead) =
     case findMatchStart behind (take 3 ahead) of
-    Nothing ->
-      go (delta + 1) (behind ++ take 1 ahead) (drop 1 ahead)
-    Just matchStart -> (matchStart, delta)
+      Nothing         -> go (delta + 1) (trackAdvance track)
+      Just matchStart -> (matchStart, delta)
+
+  trackAdvance (behind, a:as) = (behind ++ [a], as)
 
 
 
-findMatchStart :: Eq a => [a] -> [a] -> Maybe Int
-findMatchStart = findMatchStartDo 0 where
-  findMatchStartDo i xs vs
-    | take (length vs) xs == vs = Just i
-    | length xs < length vs     = Nothing
-    | otherwise                 = findMatchStartDo (i + 1) (tail xs) vs
 
 
 
-advanceWhileMatch :: Int -> String -> String -> Int
-advanceWhileMatch matchStart behind ahead =
+
+advanceWhileMatch :: Int -> (String, String) -> Int
+advanceWhileMatch matchStart (behind, ahead) =
   length $ takeWhileEqual (drop matchStart behind) ahead
-
 
 
 
 -- General Helpers --
 
+
+
+findMatchStart :: Eq a => [a] -> [a] -> Maybe Int
+findMatchStart list subSeq = go 0 list where
+  go i xs
+    | takeChunk xs == subSeq = Just i
+    | length xs < size       = Nothing
+    | otherwise              = go (i + 1) (tail xs)
+  size = length subSeq
+  takeChunk = take (length subSeq)
+
+
+
 takeWhileEqual :: Eq a => [a] -> [a] -> [a]
 takeWhileEqual xs zs =
   fmap fst . takeWhile (uncurry (==)) $ zip xs zs
 
+
+
 takeFrom :: Int -> Int -> [a] -> [a]
 takeFrom i len = take len . snd . splitAt i
+
+
 
 slice :: Int -> Int -> [a] -> [a]
 slice i size = take size . drop i
