@@ -276,3 +276,5 @@ $ jp "$.store.book[0]" store.json
 ```
 
 Your parser should support at least `$` (“the root element”), `.<name>` for object access, and `[<number>]` for array access. You can add more JSONPath elements if you want to (such as `..`, `*`, and slices). Expressions are hard, don't bother with them.
+
+You can use [aeson-pretty](https://hackage.haskell.org/package/aeson-pretty) to pretty-print JSON.
