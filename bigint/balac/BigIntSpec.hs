@@ -13,49 +13,49 @@ main :: IO ()
 main = hspec $ do
     describe "Conversion Identity" $
         it "Satisfies conversion identity w.r.t Integers." $ property $
-            \num -> bigToInteger ( fromInteger num :: BigInt ) == num
+            \num -> bigToInteger ( fromInteger num :: BigInt ) === num
 
     describe "Equality" $
         it "Matches Integer equality." $ property $
-            \a b -> ( (==) `on` ( fromInteger::Integer->BigInt ) ) a b == ( a == b )
+            \a b -> ( (==) `on` ( fromInteger::Integer->BigInt ) ) a b === ( a == b )
 
     describe "Ordering" $
         it "Matches Integer ordering." $ property $
-            \a b -> ( compare `on` ( fromInteger :: Integer -> BigInt ) ) a b == compare a b
+            \a b -> ( compare `on` ( fromInteger :: Integer -> BigInt ) ) a b === compare a b
 
     describe "Addition" $ do
         it "Matches Integer addition." $ property $
-            \a b -> bigToInteger ( ( (+) `on` fromInteger ) a b ) == a + b
+            \a b -> bigToInteger ( ( (+) `on` fromInteger ) a b ) === a + b
 
         it "Is commutative." $ property $
-            \a b -> ( ( a + b ) :: BigInt ) == ( b + a )
+            \a b -> ( ( a + b ) :: BigInt ) === ( b + a )
 
     describe "Sign Handling" $ do
         it "Matches Integer abs." $ property $
-            \a -> bigToInteger ( abs ( fromInteger a ) ) == abs a
+            \a -> bigToInteger ( abs ( fromInteger a ) ) === abs a
 
         it "Matches Integer signum." $ property $
-            \a -> bigToInteger ( signum ( fromInteger a ) ) == signum a
+            \a -> bigToInteger ( signum ( fromInteger a ) ) === signum a
 
         it "Matches Integer negate." $ property $
-            \a -> bigToInteger ( negate ( fromInteger a ) ) == negate a
+            \a -> bigToInteger ( negate ( fromInteger a ) ) === negate a
 
         it "Satisfies identity x = signum(x) * abs(x)." $ property $
-            \a -> signum a * abs a == ( a :: BigInt )
+            \a -> signum a * abs a === ( a :: BigInt )
 
         it "Satisfies identity x = negate . negate x." $ property $
-            \a -> ( a :: BigInt ) == negate ( negate a ) 
+            \a -> ( a :: BigInt ) === negate ( negate a ) 
 
     describe "Subtraction" $ do
         it "Matches Integer subtraction." $ property $
-            \a b -> bigToInteger ( ( (-) `on` fromInteger ) a b ) == a - b
+            \a b -> bigToInteger ( ( (-) `on` fromInteger ) a b ) === a - b
 
         it "Changes sign on commutation." $ property $
-            \a b -> ( ( a - b ) :: BigInt ) == negate ( b - a )
+            \a b -> ( ( a - b ) :: BigInt ) === negate ( b - a )
 
     describe "Multiplication" $ do
         it "Matches Integer multiplication." $ property $
-            \a b -> bigToInteger ( ( (*) `on` fromInteger ) a b ) == a * b
+            \a b -> bigToInteger ( ( (*) `on` fromInteger ) a b ) === a * b
 
         it "Is commutative." $ property $
-            \a b -> ( ( a * b ) :: BigInt ) == ( ( b * a ) :: BigInt )
+            \a b -> ( ( a * b ) :: BigInt ) === ( ( b * a ) :: BigInt )
