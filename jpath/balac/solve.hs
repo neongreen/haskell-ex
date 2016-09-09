@@ -74,7 +74,7 @@ parseSubscriptNum :: Parser [Integer]
 parseSubscriptNum = return <$> inSquares integer
 
 parseSubscriptUnion :: Parser [Integer]
-parseSubscriptUnion = nub <$> ( inSquares $ sepBy1 integer semi )
+parseSubscriptUnion = nub <$> inSquares ( sepBy1 integer semi )
 
 firstNIndices :: Integer -> [Integer]
 firstNIndices n = [0 .. n-1]
@@ -129,7 +129,7 @@ getAllChildren (Object obj) = return $ V.fromList ( HM.elems obj )
 getAllChildren (Array v)  = return v
 getAllChildren _ = return V.empty
 
-applyOperatorsToVec :: [JPOperator] -> ( V.Vector Value ) -> AT.Parser Value
+applyOperatorsToVec :: [JPOperator] -> V.Vector Value -> AT.Parser Value
 applyOperatorsToVec ops childrenVec = do
     results <- mapM ( applyJPOperator ops ) childrenVec
     return $ Array results 
@@ -139,11 +139,10 @@ valueToVector (Array v) = v
 valueToVector v = V.singleton v
 
 
-applyOperatorsRecursively :: [JPOperator] -> Value -> AT.Parser ( Value )
+applyOperatorsRecursively :: [JPOperator] -> Value -> AT.Parser Value
 applyOperatorsRecursively ops value = do
     curResult <- optional( valueToVector <$> applyJPOperator ops value )
-    children <- getAllChildren value
-    rawChildResults <- mapM ( applyOperatorsRecursively ops ) children
+    rawChildResults <- getAllChildren value >>= mapM ( applyOperatorsRecursively ops )
     let flattened = V.foldl' flatten V.empty ( optToVec curResult V.++ rawChildResults )
     let result = V.filter (/= Array V.empty) flattened
     return ( Array result )
@@ -151,7 +150,7 @@ applyOperatorsRecursively ops value = do
         optToVec Nothing = V.empty
         optToVec (Just v)= v
         flatten accum (Array v) = accum V.++ v
-        flatten accum x = accum V.++ ( V.singleton x )
+        flatten accum x = accum V.++ V.singleton x
 
 
 applyJPOperator :: [JPOperator] -> Value -> AT.Parser Value
@@ -168,13 +167,11 @@ applyJPOperator (op:ops) value = case op of
 main = do
     hSetEncoding stdout utf8
     hSetBuffering stdout NoBuffering
-    jsonValue <- readJsonFile "store.js"
     args <- getArgs
-    mapM putStrLn args
-    let eJpath = runParser parseOperators "" $ head args
+    let eJpath = runParser parseOperators "" $ args !! 0
+    jsonValue <- readJsonFile $ args !! 1
     case eJpath of
         Left err -> putStr ( parseErrorPretty err )
-        Right ops -> do
-            case AT.parseEither ( applyJPOperator ops ) jsonValue of
-                Left err -> print $ "Error: " ++ err
-                Right sel -> Lazy.putStr $ encodePretty sel
+        Right ops -> case AT.parseEither ( applyJPOperator ops ) jsonValue of
+                        Left err -> putStrLn err
+                        Right sel -> Lazy.putStr $ encodePretty sel
