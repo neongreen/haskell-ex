@@ -4,7 +4,7 @@ scary :: String -> Int
 scary = sum . map value 
   where
     value x
-      | isLetter x && isAscii x = ord (toUpper x) - 64
+      | isLetter x && isAscii x = ord (toUpper x) - (ord 'A' - 1)
       | otherwise               = 0
 
 isScary :: String -> Bool
