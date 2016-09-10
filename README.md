@@ -194,14 +194,15 @@ Since it's silly compression, don't bother with performance (a quadratic algorit
 
 Use [QuickCheck](https://hackage.haskell.org/package/QuickCheck) to test that decompressing a compressed input always works.
 
-Note that at least one solution so far has failed on the following test:
+Be sure to test your solution on these tricky tests:
 
 ```
 > compress "foo|bar|foobar"
-[Left "foo|bar|", Right (0,3), Left "bar"]
-```
+[Left "foo|bar|",Right (0,3),Right (4,3)]
 
-The correct output is `[Left "foo|bar|",Right (0,3),Right (4,3)]`.
+> compress "foo|foox:foox"
+[Left "foo|",Right (0,3),Left "x:",Right (4,4)]
+```
 
 ### 8. Big integers `{bigint}`
 
@@ -235,6 +236,8 @@ main = do
     \x y -> <probability that array[x] will be at y>
   getLine  -- wait (otherwise the plot window will close)
 ```
+
+(On Windows, you might have to rename the gnuplot binary to “pgnuplot”.)
 
 (If you want to check yourself, here's a plot I got for n=50 and 100000 trials: <http://imgur.com/9eHtiqJ>. If you want to know more about shuffles, read about the [Fisher–Yates shuffle](https://en.wikipedia.org/wiki/Fisher–Yates_shuffle).)
 
@@ -274,3 +277,5 @@ $ jp "$.store.book[0]" store.json
 ```
 
 Your parser should support at least `$` (“the root element”), `.<name>` for object access, and `[<number>]` for array access. You can add more JSONPath elements if you want to (such as `..`, `*`, and slices). Expressions are hard, don't bother with them.
+
+You can use [aeson-pretty](https://hackage.haskell.org/package/aeson-pretty) to pretty-print JSON.

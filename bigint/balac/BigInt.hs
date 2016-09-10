@@ -8,7 +8,7 @@ bZero = BI True [0]
 bOne  = BI True [1]
 
 instance Show BigInt where
-    show (BI p cs) = ( if p then "" else "-" ) ++ show cs
+    show (BI p cs) = ( if p then "" else "-" ) ++ reverse ( concatMap show cs )
 
 kBase :: Int
 --kBase = floor ( sqrt ( fromIntegral ( maxBound :: Int ) ) ) :: Int 
@@ -25,7 +25,9 @@ bigToInteger (BI pos xs) = sign * foldr (\term sum -> sum * iBase + fromIntegral
 toBase :: Integer -> Integer -> [Int]
 toBase x base
     | x < base = [ fromIntegral x ]
-    | otherwise = fromIntegral ( mod x base ) : toBase ( x `div` base ) base
+    | otherwise = fromIntegral rem : toBase divid base
+    where
+        ( divid, rem ) = divMod x base
 
 coeffSum :: [Int] -> [Int] -> [Int]
 coeffSum [] ys = ys
@@ -47,8 +49,7 @@ coeffDiff (x:xs) (y:ys)
 
 coeffShift :: Int -> [Int] -> [Int]
 coeffShift _ [] = []
-coeffShift 0 cs = cs
-coeffShift n cs = 0 : coeffShift ( n - 1 ) cs
+coeffShift n cs = replicate n 0 ++ cs
 
 coeffMultScalar :: Int -> [Int] -> [Int]
 coeffMultScalar _ [] = []
@@ -56,9 +57,10 @@ coeffMultScalar 0 _  = []
 coeffMultScalar 1 cs = cs
 coeffMultScalar n (x:xs)
     | termProd < kBase = termProd : coeffMultScalar n xs
-    | otherwise = mod termProd kBase : coeffSum ( coeffMultScalar n xs ) [ termProd `div` kBase ]
+    | otherwise = rem : coeffSum ( coeffMultScalar n xs ) [ divid ]
     where
         termProd = n * x
+        ( divid, rem ) = divMod termProd kBase
 
 
 coeffMultiply :: [Int] -> [Int] -> [Int]
