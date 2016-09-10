@@ -20,6 +20,6 @@ mergesort lst =
 
 main :: IO ()
 main = do
-  xs <- lines <$> getContents >>= return . map (read :: String -> Int)
+  xs <- map (read :: String -> Int) . words <$> getContents
   -- print xs
-  mapM_ putStrLn (mergesort xs)
+  mapM_ print (mergesort xs)
