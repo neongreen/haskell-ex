@@ -6,39 +6,32 @@ import Test.QuickCheck
 main = do
   quickCheck $ \xs -> decompress (compress xs) === xs
 
-type Token = Either String (Int, Int)
+type Token = Either String (Int, Int)  -- Starting position, length
 
 {- |
-Return /all/ matches of a string against another string, even the ones with length 0.
-
-@matches i p s@ will find all matches of @s@ or any its prefix against @p@:
-
->>> matches 0 "abacaba" "bac"
-[(0,0),
- (1,3),  -- offset 1: “a|bacaba” matches all 3 characters of “bac”
- (2,0),
- (3,0),
- (4,0),
- (5,2),  -- offset 5: “abaca|ba” matches first 2 characters of “bac”
- (6,0)]
+>>> prefixLength "hello" "world"
+0
+>>> prefixLength "hello" "hex"
+2
 -}
-matches
-  :: Int            -- ^ Offset of the string
-  -> String         -- ^ Huge string we're matching against
-  -> String         -- ^ String we're trying to match
-  -> [(Int, Int)]
-matches _ [] s = []
-matches i p s =
-  let matchLength = length (takeWhile id (zipWith (==) p s))
-  in  (i, matchLength) : matches (i+1) (tail p) s
+prefixLength :: String -> String -> Int
+prefixLength p s = length (takeWhile id (zipWith (==) p s))
 
 {- |
-Find longest match among all matches returned by 'matches'.
+Find longest match of two strings. For instance, @longestMatch "abacaba" "bac"@ will find two matches:
+
+@
+1. a|bac|aba   2. abaca|ba|
+    |bac|              |ba|c
+@
+
+and choose the first one, because it's longer. The resulting match will be @(1,3)@ – starts from index 1, length = 3. If there's no match, length will be 0.
 -}
 longestMatch :: String -> String -> (Int, Int)
-longestMatch p s = case matches 0 p s of
-  [] -> (0,0)
-  xs -> maximumBy (comparing snd) xs
+longestMatch p s = maximumBy (comparing snd) matches
+  where
+    matches :: [(Int, Int)]
+    matches = [(i, prefixLength p' s) | (i, p') <- zip [0..] (tails p)]
 
 {- |
 Consolidate all characters found by 'compress' into strings.
@@ -65,6 +58,8 @@ compress s = consolidate $ go [] s
     go _ [] = []
     go p (c:s) =
       let (i,n) = longestMatch p (c:s)
+          -- we can use @splitAt n@ because the match is always a prefix of
+          -- the second string (i.e. @c:s@)
           (match, rest) = splitAt n (c:s)
       in if n < 3 then Left [c]    : go (p ++ [c]) s
                   else Right (i,n) : go (p ++ match) rest
