@@ -55,18 +55,21 @@ consolidate xs             = Left (concat (lefts ls)) : consolidate rest
 compress :: String -> [Token]
 compress s = consolidate $ go "" s
   where
-    -- The first parameter is the string we've already processed,
-    -- the second – string left to process
+    -- Do the compression. The first parameter is the string we've already
+    -- processed, the second – string left to process.
     go :: String -> String -> [Token]
     go _ "" = []
     go p (c:cs)
-      | n < 3     = Left [c]    : go (p ++ [c]) cs
-      | otherwise = Right (i,n) : go (p ++ match) rest
+      -- We have the index (i) and the length (n) of the longest
+      -- match. However, if the match is too short, we instead yield a single
+      -- character (c) as a string token and continue.
+      | n < 3 = Left [c] : go (p ++ [c]) cs
+      -- If the match isn't too short, we cut it out of 's', yield it, and
+      -- continue with the rest of 's'.
+      | otherwise = let (match, rest) = splitAt n (c:cs)
+                    in  Right (i,n) : go (p ++ match) rest
       where
         (i,n) = longestMatch p (c:cs)
-        -- we can use @splitAt n@ because the match is always a prefix of
-        -- the second string (i.e. @c:s@)
-        (match, rest) = splitAt n (c:cs)
 
 decompress :: [Token] -> String
 decompress xs = uncompressed
