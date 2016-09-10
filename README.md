@@ -206,7 +206,7 @@ Be sure to test your solution on these tricky tests:
 
 ### 8. Big integers `{bigint}`
 
-Implement a type for big integers (like `Integer`) that would be an instance of `Num` – that is, you'll have to write `(+)`, `(*)`, `abs`, `signum`, `fromInteger`, and either `(-)` or `negate`. It should also have instances of `Eq`, `Ord`, and `Show`.
+Implement a type for big integers (like `Integer`) that would be an instance of `Num` – that is, you'll have to write `(+)`, `(*)`, `abs`, `signum`, `fromInteger`, and either `(-)` or `negate`. It should also have instances of `Eq` and `Ord`. (The instance of `Show` can be autoderived to make debugging easier.)
 
 Implementing simple algorithms is fine, you don't have to do a [Karatsuba](https://en.wikipedia.org/wiki/Karatsuba_algorithm).
 
