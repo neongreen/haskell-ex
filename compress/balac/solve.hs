@@ -9,19 +9,24 @@ commonPrefixLength xs ys = length $ takeWhile ( uncurry (==) ) $ zip xs ys
 
 type Match = (Int,Int)
 
-findMatch :: String -> String -> Int -> Maybe Match
-findMatch [] _ _ = Nothing
-findMatch str1 str2 startOffset =   
+findMatches :: String -> String -> Int -> [ Match ]
+findMatches [] _ _ = []
+findMatches str1 str2 startOffset =   
     if cpLength < kMinMatch
-        then findMatch ( tail str1 ) str2 ( startOffset + 1 )
-        else Just ( startOffset, cpLength ) 
+        then rest
+        else ( startOffset, cpLength ) : rest 
     where
+        rest = findMatches ( tail str1 ) str2 ( startOffset + 1 )
         cpLength = commonPrefixLength str1 str2
 
+biggestMatch :: String -> String -> Maybe Match
+biggestMatch str1 str2 = case findMatches str1 str2 0 of
+                            [] -> Nothing
+                            xs -> Just ( ( head . reverse ) $ sortOn snd xs )
 
 matchSuffixes :: [String] -> [ (Int,String) ] -> [ (Int, Match) ]
 matchSuffixes (prefix:prefixes) ((soffset,suffix):suffixes) = 
-    case findMatch prefix suffix 0 of
+    case biggestMatch prefix suffix of
         Nothing ->  matchSuffixes prefixes suffixes
         Just match@( moffset, prefixLength ) -> (soffset, match) : matchSuffixes ( drop ( prefixLength - 1 ) prefixes ) ( drop ( prefixLength - 1 ) suffixes )
 matchSuffixes _ _ = []
@@ -61,9 +66,21 @@ decompress' str ( Right (mpos,mlen) : tokens ) = decompress' ( str ++ take mlen 
 prop_inverse :: String -> Bool
 prop_inverse str = decompress ( compress str ) == str
 
-sampleStr1 = "Consider a string. No, consider a different string. Whatever."
-sampleStr2 = "foo|bar|foobar"
+sampleOut1, sampleOut2, sampleOut3 :: [ Either String (Int,Int) ]
 
-main = quickCheck prop_inverse
+sampleInp1 = "Consider a string. No, consider a different string. Whatever."
+sampleOut1 = [ Left "Consider a string. No, c", Right (1,10), Left "different", Right (10,9), Left "Whatever." ]
+sampleInp2 = "foo|bar|foobar"
+sampleOut2 = [Left "foo|bar|",Right (0,3),Right (4,3)]
+sampleInp3 = "foo|foox:foox"
+sampleOut3 = [Left "foo|",Right (0,3),Left "x:",Right (4,4)]
+
+
+main :: IO ()
+main = do
+    quickCheck $ compress sampleInp1 == sampleOut1
+    quickCheck $ compress sampleInp2 == sampleOut2
+    quickCheck $ compress sampleInp3 == sampleOut3
+    quickCheck prop_inverse
 
 --TODO: Rewrite using State.
