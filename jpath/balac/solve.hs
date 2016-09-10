@@ -101,7 +101,7 @@ anyOp :: Parser JPOperator
 anyOp = rootOp <|> currentOp <|> try allChildrenOp <|> try childOp <|> try subscriptSetOp <|> try recursiveOp
 
 parseOperators :: Parser [JPOperator]
-parseOperators = lexeme $ some anyOp
+parseOperators = ( lexeme $ some anyOp ) <* eof
 
 readJsonFile :: FilePath -> IO Value
 readJsonFile filePath = do
