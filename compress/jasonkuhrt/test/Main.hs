@@ -35,3 +35,10 @@ main = hspec $ do
     it "given string divisable by 3 does not end in empty string" $
       let string = "123456789"
       in  shouldBe (Compress.put string) [Left string]
+
+    it "compresses foo|foox:foox" $
+      shouldBe
+        (Compress.put "foofooxfoox")
+        [Left "foo", Right (0,3), Left "x", Right (3,4)]
+        -- (Compress.put "foo|foox:foox")
+        -- [Left "foo|", Right (0,3), Left "x:", Right (5,4), Left "x"]
