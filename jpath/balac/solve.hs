@@ -7,9 +7,11 @@ import qualified Data.ByteString.Lazy as Lazy
 import Data.Aeson
 import Data.Aeson.Encode.Pretty
 import qualified Data.Aeson.Types as AT
+import Data.Functor
 import qualified Data.HashMap.Strict as HM
 import Data.List
 import Data.Maybe
+import Data.Monoid
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Vector as V
@@ -59,16 +61,16 @@ identifier :: Parser String
 identifier = lexeme $ (:) <$> C.letterChar <*> many C.alphaNumChar
 
 rootOp :: Parser JPOperator
-rootOp = const OpRoot <$> C.char '$'
+rootOp = C.char '$' $> OpRoot
 
 currentOp :: Parser JPOperator
-currentOp = const OpCurrent <$> C.char '@'
+currentOp = C.char '@' $> OpCurrent
 
 childOp :: Parser JPOperator
 childOp = OpChild <$> ( ( dot >> identifier ) <|> inSquares identifier <|> identifier )
 
 allChildrenOp :: Parser JPOperator
-allChildrenOp = const OpAllChildren <$> ( C.char '*' <|> inSquares ( C.char '*' ) <|> ( dot >> C.char '*' ) )
+allChildrenOp = ( C.char '*' <|> inSquares ( C.char '*' ) <|> ( dot >> C.char '*' ) ) $> OpAllChildren
 
 parseSubscriptNum :: Parser [Integer]
 parseSubscriptNum = return <$> inSquares integer
@@ -120,9 +122,7 @@ getChildByKey key = withObject "object" $ \obj ->
 
 getChildrenByIndices :: [Integer] -> Value -> AT.Parser ( V.Vector Value )
 getChildrenByIndices indices = withArray "array" $ \arr -> do
-                                    let maybeChildren = map ( ( arr V.!? ) . fromInteger ) indices
-                                    let children = map fromJust $ filter isJust maybeChildren
-                                    return $ V.fromList children
+                                    return $ V.fromList ( mapMaybe ( ( arr V.!? ) . fromInteger ) indices )
 
 getAllChildren :: Value -> AT.Parser ( V.Vector Value )
 getAllChildren (Object obj) = return $ V.fromList ( HM.elems obj )
@@ -130,27 +130,24 @@ getAllChildren (Array v)  = return v
 getAllChildren _ = return V.empty
 
 applyOperatorsToVec :: [JPOperator] -> V.Vector Value -> AT.Parser Value
-applyOperatorsToVec ops childrenVec = do
-    results <- mapM ( applyJPOperator ops ) childrenVec
-    return $ Array results 
+applyOperatorsToVec ops childrenVec = Array <$> mapM ( applyJPOperator ops ) childrenVec
 
 valueToVector :: Value -> V.Vector Value
 valueToVector (Array v) = v
 valueToVector v = V.singleton v
+
+mFromMaybe :: ( Monoid m ) => Maybe m -> m
+mFromMaybe Nothing   = mempty
+mFromMaybe (Just x)  = x
 
 
 applyOperatorsRecursively :: [JPOperator] -> Value -> AT.Parser Value
 applyOperatorsRecursively ops value = do
     curResult <- optional( valueToVector <$> applyJPOperator ops value )
     rawChildResults <- getAllChildren value >>= mapM ( applyOperatorsRecursively ops )
-    let flattened = V.foldl' flatten V.empty ( optToVec curResult V.++ rawChildResults )
+    let flattened = V.concatMap valueToVector ( mFromMaybe curResult <> rawChildResults )
     let result = V.filter (/= Array V.empty) flattened
     return ( Array result )
-    where
-        optToVec Nothing = V.empty
-        optToVec (Just v)= v
-        flatten accum (Array v) = accum V.++ v
-        flatten accum x = accum V.++ V.singleton x
 
 
 applyJPOperator :: [JPOperator] -> Value -> AT.Parser Value
