@@ -17,6 +17,7 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import Debug.Trace
 import System.Environment
+import System.Exit
 import System.IO
 import Text.Megaparsec
 import Text.Megaparsec.Expr
@@ -160,13 +161,23 @@ applyJPOperator (op:ops) value = case op of
     OpAllChildren           -> getAllChildren value >>= applyOperatorsToVec ops
     OpRecursive             -> applyOperatorsRecursively ops value
 
+getInputArgs :: IO (String,String)
+getInputArgs = do
+    args <- getArgs
+    if length args < 2
+        then do
+            progName <- getProgName
+            die $ "Usage: " ++ progName ++ " <jpath query> <json file>"
+        else
+            return ( head args, ( head . tail ) args )
 
+main :: IO ()
 main = do
     hSetEncoding stdout utf8
     hSetBuffering stdout NoBuffering
-    args <- getArgs
-    let eJpath = runParser parseOperators "" $ args !! 0
-    jsonValue <- readJsonFile $ args !! 1
+    ( jpQuery, jsonFile ) <- getInputArgs
+    let eJpath = runParser parseOperators "" jpQuery
+    jsonValue <- readJsonFile jsonFile
     case eJpath of
         Left err -> putStr ( parseErrorPretty err )
         Right ops -> case AT.parseEither ( applyJPOperator ops ) jsonValue of
