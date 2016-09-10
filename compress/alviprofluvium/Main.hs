@@ -6,18 +6,20 @@ type Patch = (Int, Int)
 type Code = Either String Patch
 
 tryCompress :: String -> String -> Maybe Patch
-tryCompress xs ys = createPatch lol
+tryCompress xs ys = createPatch match
   where 
-    lol = find (`isPrefixOf` xs) $ subStrings ys
+    match = find (`isPrefixOf` xs) $ subStrings ys
     createPatch :: Maybe String -> Maybe Patch
-    createPatch Nothing = Nothing
+    createPatch Nothing  = Nothing
     createPatch (Just x) = Just (index, length x)
       where index = fromJust $ findSubstringIndex x ys
 
 subStrings :: String -> [String]
-subStrings xs =  reverse $ sortOn length $ filter (`isInfixOf` xs) $ filter long $ nub $ subsequences xs
+subStrings xs =  reverse $ sortOn length viableSubstrings
   where 
-    long x = length x > 2
+    long x           = length x > 2
+    viableSubstrings = filter (`isInfixOf` xs) $ filter long $ nub $ subsequences xs
 
-findSubstringIndex :: Eq a => [a] -> [a] -> Maybe Int
+
+findSubstringIndex :: String -> String -> Maybe Int
 findSubstringIndex pat str = findIndex (isPrefixOf pat) $ tails str
