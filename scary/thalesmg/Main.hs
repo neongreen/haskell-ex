@@ -8,7 +8,7 @@ isScary word =
     charToInt :: Char -> Int
     charToInt c = ord c - ord 'a' + 1
   in
-    foldr (\c acc -> charToInt c + acc) 0 filtered == 13
+    sum (map charToInt filtered) == 13
   
 main :: IO ()  
 main = do
