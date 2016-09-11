@@ -2,6 +2,7 @@ import Data.List
 import Data.Ord
 import Data.Maybe
 import Data.Function
+import Test.QuickCheck
 
 type Patch = (Int, Int)
 type Code = Either String Patch
@@ -57,6 +58,8 @@ uncompressLoop (Left x:xs) ys = uncompressLoop xs $ ys ++ x
 uncompress :: [Code] -> String
 uncompress xs = uncompressLoop xs []
 
-testCompression :: String -> Bool
-testCompression xs = (uncompress . compress) xs == xs
+propCompression :: String -> Property
+propCompression xs = (uncompress . compress) xs === xs
 
+main :: IO ()
+main = quickCheck propCompression
