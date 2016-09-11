@@ -1,3 +1,10 @@
+mergesort :: [a] -> [a]
+mergesort [] = []
+mergesort (x:xs) =
+    let left  = fst(splitlist xs)
+        right = snd(splitlist xs)
+    in merge (mergesort left) (mergesort right)
+
 merge :: Ord a => [a] -> [a] -> [a]
 merge xs [] = xs
 merge [] ys = ys
