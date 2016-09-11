@@ -1,5 +1,6 @@
 mergesort :: Ord a => [a] -> [a]
-mergesort [] = []
+mergesort []  = []
+mergesort [x] = [x]
 mergesort (x:xs) =
     let left  = fst(splitlist xs)
         right = snd(splitlist xs)
