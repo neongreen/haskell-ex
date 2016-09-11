@@ -2,8 +2,7 @@ mergesort :: Ord a => [a] -> [a]
 mergesort []  = []
 mergesort [x] = [x]
 mergesort all@(x:xs) =
-    let left  = fst(splitlist all)
-        right = snd(splitlist all)
+    let (left,right) = splitlist all
     in merge (mergesort left) (mergesort right)
 
 merge :: Ord a => [a] -> [a] -> [a]
