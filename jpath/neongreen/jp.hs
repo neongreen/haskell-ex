@@ -89,7 +89,7 @@ printHelp = do
 processFile :: Text -> FilePath -> IO ()
 processFile query file = do
   -- Parse the query as a path
-  path <- case parse pathP "" query of
+  path <- case parse (pathP <* eof) "" query of
     Left err -> die $ "Error when parsing query: " ++ parseErrorPretty err
     Right path -> return path
   -- Parse JSON
