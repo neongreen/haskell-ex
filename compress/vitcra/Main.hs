@@ -28,7 +28,8 @@ vCompressWith (sp, s) (vp, v)
     -- | to avoid overlapping subseqs, e.g. "aa" in "aaa".
     repeats = reverse $ fst $ foldl' f ([], 0) is
     f (finds, vpos) spos
-      | spos < vpos = (finds, vpos)
+      | spos < vpos || spos + ls > lv = (finds, vpos)
+      | vp + spos < sp && vp + spos + ls > sp = (finds, spos)
       | sp == vp + spos = (finds, spos + ls)
       | otherwise = if s == V.slice spos ls v
           then (spos:finds, spos + ls)
@@ -37,9 +38,12 @@ vCompressWith (sp, s) (vp, v)
     -- | The leftovers will be turned into Left Sub a.
     replace pos (next:rest) =
       let nextpos = pos + next
-      in Left (vp+pos, V.slice pos (pos+next) v)
-       : Right (sp, ls)
-       : replace (nextpos + ls) rest
+          prefix = V.slice pos nextpos v
+          replacement = Right (sp, ls) : replace (nextpos + ls) rest
+      in
+        if V.null prefix
+        then replacement 
+        else Left (pos, prefix) : replacement
     replace pos []
       | pos < lv = [Left (vp+pos, V.slice pos (lv-pos) v)]
       | otherwise = []
