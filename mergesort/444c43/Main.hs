@@ -6,4 +6,4 @@ merge (x:xs) (y:ys)
   | y <= x = y : merge (x:xs) ys
 
 splitlist :: [a] -> ([a], [a])
-splitlist list = splitAt ((length (list) + 1) `div` 2) list
+splitlist list = splitAt ((length list + 1) `div` 2) list
