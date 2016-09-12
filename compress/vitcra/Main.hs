@@ -37,12 +37,12 @@ vCompressWith (sp, s) (vp, v)
     -- | Replace the repeating subseqs with Right (start, length),
     -- | The leftovers will be turned into Left Sub a.
     replace pos (next:rest) =
-      let nextpos = pos + next
-          prefix = V.slice pos nextpos v
-          replacement = Right (sp, ls) : replace (nextpos + ls) rest
+      let
+          prefix = V.slice pos (next - pos) v
+          replacement = Right (sp, ls) : replace (next + ls) rest
       in
         if V.null prefix
-        then replacement 
+        then replacement
         else Left (pos, prefix) : replacement
     replace pos []
       | pos < lv = [Left (vp+pos, V.slice pos (lv-pos) v)]
@@ -83,7 +83,7 @@ compress str = result where
     | n < minSubLength = cmpd
     | p > lv - n = loop (n-1) 0 cmpd
     | further == cmpd = loop n (p+1) cmpd
-    | otherwise = loop n (p+n) further
+    | otherwise = loop n (p+n-1) further
     where
       sub = slice p n cmpd
       further = if V.null sub then cmpd else compressWith (p, sub) cmpd
