@@ -296,7 +296,7 @@ Convert a number to binary and back:
 123
 ```
 
-You don't have to handle non-negative numbers.
+You don't have to handle negative numbers.
 
 ### 12. Working with expressions `{expr}`
 
