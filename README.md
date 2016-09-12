@@ -296,6 +296,8 @@ Convert a number to binary and back:
 123
 ```
 
+You don't have to handle non-negative numbers.
+
 ### 12. Working with expressions `{expr}`
 
 An arithmetic expression can be represented with the following datatype:
