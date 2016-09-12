@@ -323,6 +323,8 @@ Write functions to print and evaluate expressions:
 
 You get bonus points if you only print parentheses when they are needed – e.g. `3+5*7` doesn't need any parentheses. However, it's an optional requirement.
 
+Also, don't forget about parentheses around negative numbers.
+
 ### 13. Compute a moving average `{average}`
 
 A simple [moving average](https://en.wikipedia.org/wiki/Moving_average) is a way to smooth data points. Assume that you have a list:
