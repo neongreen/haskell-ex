@@ -1,62 +1,52 @@
-import Data.List
+import Data.List.Safe
 import Data.Ord
 import Data.Maybe
 import Data.Function
+import Data.Monoid
 import Test.QuickCheck
 
 type Patch = (Int, Int)
 type Code = Either String Patch
 
-tryCompress :: String -> String -> Maybe Patch
-tryCompress xs ys = createPatch $ matches xs ys
+match :: String -> String -> Maybe Patch
+match back front = maximumBy (comparing snd <> comparing (Down . fst)) matches
   where 
-    createPatch :: Maybe String -> Maybe Patch
-    createPatch Nothing  = Nothing
-    createPatch (Just x) = Just (index, length x)
-      where index = fromJust $ findSubstringIndex x ys
+    matches = filter long $ map (`createPatch` front) (suffixes back)
+    long xs = snd xs > 2
 
-matches :: String -> String -> Maybe String
-matches xs ys = find (`isPrefixOf` xs) viableSubstrings
-  where 
-    long x = length x > 2
-    viableSubstrings = reverse $ sortOn length $ filter long $ getSubstrings xs ys
+createPatch :: (Int, String) -> String -> Patch
+createPatch (i, xs) ys = (i, length common)
+  where common = takeWhile (uncurry (==)) $ zip xs ys
 
---Source
---https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring#Haskell
-getSubstrings :: String -> String -> [String]
-getSubstrings xs ys = concat $ [f xs' ys | xs'<- tails xs] ++ [f xs ys' | ys' <- drop 1 $ tails ys]
-  where f xs ys = scanl g [] $ zip xs ys
-        g z (x,y) = if x == y then z ++ [x] else []
-
-
-findSubstringIndex :: String -> String -> Maybe Int
-findSubstringIndex pat str = findIndex (isPrefixOf pat) $ tails str
-
-loop :: String -> String -> [Code]
-loop _ [] = []
-loop comp uncomp@(x:xs) 
-  | isNothing compression = Left [x] : loop (comp ++ [x]) xs
-  | otherwise             = Right (fromJust compression) : loop (comp ++ take len uncomp) (drop len uncomp)
-  where
-    compression = tryCompress uncomp comp
-    (_, len)    = fromJust compression
+suffixes :: String -> [(Int, String)]
+suffixes = zip [0..] . tails
 
 compress :: String -> [Code]
-compress = flatten . loop []
+compress = flatten . go []
+  where
+    go :: String -> String -> [Code]
+    go _ [] = []
+    go back front@(x:xs)
+      | isNothing patch = Left [x] : go (back ++ [x]) xs
+      | otherwise       = Right (fromJust patch) : go (back ++ compressed) (drop l front)
+      where
+        patch      = match back front
+        (_, l)     = fromJust patch
+        compressed = take l front
 
 flatten :: [Code] -> [Code]
 flatten [] = []
 flatten (Left x:Left y:zs) = flatten $ Left (x++y) : zs
 flatten (x:xs) = x : flatten xs
 
-uncompressLoop :: [Code] -> String -> String
-uncompressLoop [] ys = ys
-uncompressLoop (Right (index, length):xs) ys = uncompressLoop xs $ ys ++ link 
-  where link = take length $ drop index ys
-uncompressLoop (Left x:xs) ys = uncompressLoop xs $ ys ++ x
-
 uncompress :: [Code] -> String
-uncompress xs = uncompressLoop xs []
+uncompress = go []
+  where
+    go :: String -> [Code] -> String
+    go xs [] = xs
+    go xs (Left y:ys) = go (xs ++ y) ys 
+    go xs (Right (i, l):ys) = go (xs ++ link) ys
+      where link = take l $ drop i xs
 
 propCompression :: String -> Property
 propCompression xs = (uncompress . compress) xs === xs
