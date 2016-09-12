@@ -360,8 +360,6 @@ Implement moving average with an arbitrary window size:
 [1.0, 3.0, 4.0, 5.5, 7.5, 8.0, 7.5]
 ```
 
-### 13. 
-
 ### 14. XOR encryption `{xor}`
 
 Write a program that encrypts a file by [XORing](https://en.wikipedia.org/wiki/XOR_cipher) it with a key. For instance, if the file is “abracadabra” and the key is “XYZ”, then the result would be
