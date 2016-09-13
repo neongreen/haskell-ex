@@ -1,15 +1,16 @@
-import Data.List.Safe
 import Data.Ord
 import Data.Maybe
 import Data.Function
 import Data.Monoid
+import Data.List
+import qualified Data.List.Safe as Safe (maximumBy) -- from safelist
 import Test.QuickCheck
 
 type Patch = (Int, Int)
 type Code = Either String Patch
 
 match :: String -> String -> Maybe Patch
-match back front = maximumBy (comparing snd <> comparing (Down . fst)) matches
+match back front = Safe.maximumBy (comparing snd <> comparing (Down . fst)) matches
   where 
     matches = filter long $ map (`createPatch` front) (suffixes back)
     long xs = snd xs > 2
