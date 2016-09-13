@@ -112,7 +112,6 @@ remove compressed = decompressed where
 
 
 -- Compression --
--- TODO Refactor. See https://github.com/neongreen/haskell-ex/blob/master/compress/neongreen/Main.hs#L55-L72
 
 put :: String -> CompressedString
 put string = compact (go "" string) where
