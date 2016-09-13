@@ -47,35 +47,58 @@
 module Main where
 
 import qualified Test.QuickCheck as QS
+import qualified Data.List as List
 
 
 
 type Binary = Integer
-type Decimal = Integer
+type Digit = Integer
 
 
 
 main :: IO ()
-main = putStrLn "Hello World"
+main = undefined
 
 
 
--- toDecimal :: Binary -> Integer
+toDecimal :: Binary -> Integer
 toDecimal =
-  foldl go 0 . zip [0..] . explodeNumber
+  foldl addUp 0 . zip [0..] . reverse . digits
   where
-  go val (sigDig, 0) = val
-  go val (sigDig, 1) = val + 2^sigDig
-
+  addUp val (sigDig, 0) = val
+  addUp val (sigDig, 1) = val + 2^sigDig
 
 
 
 toBinary :: Integer -> Binary
-toBinary = undefined
+toBinary n = foldl1 (\acc _ -> binNext acc) [0..n]
+
+-- If there are zeros
+--  Find right-most
+--  flip it (to 1)
+--  everything else right, flip it (to 0)
+-- otherwise (AKA overflow), prepend 1
+--   everything else right, flip it (to 0)
+binNext :: Binary -> Binary
+binNext = undigits . go . digits
+  where
+  go binum
+    | null zeros = 1 : fmap bitFlip binum
+    | otherwise  =
+      let (remain, toInvert) = splitAt (last zeros) binum in
+      remain ++ fmap bitFlip toInvert
+    where
+    zeros = List.elemIndices 0 binum
+    bitFlip 1 = 0
+    bitFlip 0 = 1
+
 
 
 
 -- General Helpers --
 
-explodeNumber :: Integer -> [Decimal]
-explodeNumber = fmap (read . (:[])) . show
+digits :: Integer -> [Digit]
+digits = fmap (read . (:[])) . show
+
+undigits :: [Digit] -> Integer
+undigits = read . concatMap show
