@@ -91,21 +91,23 @@ type Track = (String, String)
 
 
 
--- Undoing Compression --
+-- Decompression --
+
+-- [1] Tie the knot
+--     https://wiki.haskell.org/Tying_the_Knot
 
 remove :: Compressed -> String
-remove = foldl go "" where
+remove compressed = decompressed where
 
-  go :: String -> CompressedChunk -> String
-  go uncompressed (Right ref)   = deRef uncompressed ref
-  go uncompressed (Left string) = uncompressed ++ string
+  decompressed = concatMap deRef compressed -- [1]
 
-  deRef :: String -> CompressionRef -> String
-  deRef uncompressed (i, size) = uncompressed ++ takeSlice i size uncompressed
-
+  deRef :: CompressedChunk -> String
+  deRef (Left string)     = string
+  deRef (Right (i, size)) = takeSlice i size decompressed -- [1]
 
 
--- Doing Compression --
+
+-- Compression --
 
 put :: String -> Compressed
 put string = go (makeTrack string) where
