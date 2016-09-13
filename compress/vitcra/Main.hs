@@ -14,7 +14,7 @@ type Compressed a = Either (Sub a) Interval
 
 vCompressWith :: Eq a => Sub a -> Sub a -> [Compressed a]
 vCompressWith (sp, s) (vp, v)
-  | ls == 0 || lv == 0 || ls > lv = []
+  | ls == 0 || lv == 0 || ls > lv = [Left (vp, v)]
   | otherwise = replace 0 repeats
   where
     ls = V.length s
@@ -43,7 +43,7 @@ vCompressWith (sp, s) (vp, v)
       in
         if V.null prefix
         then replacement
-        else Left (pos, prefix) : replacement
+        else Left (vp+pos, prefix) : replacement
     replace pos []
       | pos < lv = [Left (vp+pos, V.slice pos (lv-pos) v)]
       | otherwise = []
@@ -83,7 +83,7 @@ compress str = result where
     | n < minSubLength = cmpd
     | p > lv - n = loop (n-1) 0 cmpd
     | further == cmpd = loop n (p+1) cmpd
-    | otherwise = loop n (p+n-1) further
+    | otherwise = loop n (p+1) further
     where
       sub = slice p n cmpd
       further = if V.null sub then cmpd else compressWith (p, sub) cmpd
