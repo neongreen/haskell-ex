@@ -115,18 +115,20 @@ remove compressed = decompressed where
 -- TODO Refactor. See https://github.com/neongreen/haskell-ex/blob/master/compress/neongreen/Main.hs#L55-L72
 
 put :: String -> CompressedString
-put string = compact (go ("", string)) where
+put string = compact (go "" string) where
 
-  go :: Track -> CompressedString
-  go (_, []) = []
-  go track@(behind, ahead)
-    | size < 3  = Left (take advanceSize ahead) : next
-    | otherwise = Right ref : next
+  go :: String -> String -> CompressedString
+  go _ []       = []
+  go p ahead
+    | size < 3  =
+      let (taken, rest) = splitAt 1 ahead in
+      Left taken : go (p ++ taken) rest
+    | otherwise =
+      let (taken, rest) = splitAt size ahead in
+      Right ref : go (p ++ taken) rest
     where
-    next = go (advanceCursor advanceSize track)
-    advanceSize = if size > 0 then size else 1
     (i, size) = ref
-    ref = longestMatch behind ahead
+    ref       = longestMatch p ahead
 
 
 
@@ -137,12 +139,6 @@ compact = go where
   go (Left string:xs) = Left (string ++ concat (Either.lefts more)) : go rest
     where
     (more, rest) = span Either.isLeft xs
-
-
-
-advanceCursor :: Int -> Track -> Track
-advanceCursor n (behind, ahead) =
-  (behind ++ take n ahead, drop n ahead)
 
 
 
