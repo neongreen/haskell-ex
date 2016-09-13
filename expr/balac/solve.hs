@@ -7,7 +7,7 @@ data Expr
   | Div Expr Expr
     deriving( Show )
 
-sampleExpr = Mul (Number 3) (Add (Number 5) (Number 7))
+sampleExpr = Mul (Number (-2)) ( Mul (Number 3) (Add (Number 5) (Number 7)) )
 
 
 evalExpr :: Expr -> Int
@@ -19,19 +19,19 @@ evalExpr ( Div l r )    = ( evalExpr l ) `div` ( evalExpr r )
 
 
 showExpr :: Expr -> String
-showExpr ( Number n )   = show n
+showExpr ( Number n )   = if n < 0 then concat [ "(", show n , ")" ] else show n
 showExpr ( Add l r )    = concat [ showExpr l, "+", showExpr r ]
 showExpr ( Sub l r )    = concat [ showExpr l, "-", showExpr r ]
 
-showExpr ( Mul ( Number l ) ( Number r ) )  = concat [ show l, "*", show r ]
-showExpr ( Mul ( Number l ) r )             = concat [ show l, "*(", showExpr r, ")" ]
-showExpr ( Mul l ( Number r ) )             = concat [ "(", showExpr l, ")*", show r ]
-showExpr ( Mul l r )                        = concat [ "(", showExpr l, ")*(", showExpr r, ")" ]
+showExpr ( Mul l@( Number _ ) r@( Number _ ) )  = concat [ showExpr l, "*", showExpr r ]
+showExpr ( Mul l@( Number _ ) r )               = concat [ showExpr l, "*(", showExpr r, ")" ]
+showExpr ( Mul l r@( Number _ ) )               = concat [ "(", showExpr l, ")*", showExpr r ]
+showExpr ( Mul l r )                            = concat [ "(", showExpr l, ")*(", showExpr r, ")" ]
 
-showExpr ( Div ( Number l ) ( Number r ) )  = concat [ show l, "/", show r ]
-showExpr ( Div ( Number l) r )              = concat [ show l, "/(", showExpr r, ")" ]
-showExpr ( Div l ( Number r ) )             = concat [ "(", showExpr l, ")/", show r ]
-showExpr ( Div l r )                        = concat [ "(", showExpr l, ")/(", showExpr r, ")" ]
+showExpr ( Div l@( Number _ ) r@( Number _ ) )  = concat [ showExpr l, "/", showExpr r ]
+showExpr ( Div l@( Number _) r )                = concat [ showExpr l, "/(", showExpr r, ")" ]
+showExpr ( Div l r@( Number _ ) )               = concat [ "(", showExpr l, ")/", showExpr r ]
+showExpr ( Div l r )                            = concat [ "(", showExpr l, ")/(", showExpr r, ")" ]
 
 main = do
     print sampleExpr
