@@ -42,7 +42,7 @@ TRACK foo|fooxfoox  foo|fooxfoox  foo|fooxfoox
       ^^^ ^^^       ^^^ ^^^^      ^^^ ^^^
       MATCH         END CASE 4    REVERT
 
-* Add Chunk Compressed + Advance Track
+* Add Chunk CompressedString + Advance Track
 
 COMPR foo(0,3)
 TRACK foofoo|xfoox
@@ -69,7 +69,7 @@ TRACK foofoox|foox  foofoox|foox  foofoox|foox  foofoox|foox  foofoox|foox
       ^^^^^   ^^^^^    ^^^^ ^^^^
       END CASE 3    REVERT
 
-* Push Chunk Compressed + Advance Track
+* Push Chunk CompressedString + Advance Track
 
 COMPR foo(0,3)x(3,4)
 TRACK foofooxfoox|
@@ -82,106 +82,98 @@ TRACK foofooxfoox|
 
 module Compress where
 
+import qualified Data.List as List
+import qualified Data.Ord as Ord
+import qualified Data.Either as Either
 
 
-type Compressed = [CompressedChunk]
-type CompressedChunk = Either String CompressionRef
-type CompressionRef = (Int, Int)
+
+type CompressedString = [Token]
+type Token = Either String Reference
+type Reference = (Int, Int)
 type Track = (String, String)
 
 
 
 -- Decompression --
 
--- [1] Tie the knot
---     https://wiki.haskell.org/Tying_the_Knot
+-- [1] Tying the knot, see wiki.haskell.org/Tying_the_Knot
+--
 
-remove :: Compressed -> String
+remove :: CompressedString -> String
 remove compressed = decompressed where
 
   decompressed = concatMap deRef compressed -- [1]
 
-  deRef :: CompressedChunk -> String
+  deRef :: Token -> String
   deRef (Left string)     = string
   deRef (Right (i, size)) = takeSlice i size decompressed -- [1]
 
 
 
 -- Compression --
+-- TODO Refactor. See https://github.com/neongreen/haskell-ex/blob/master/compress/neongreen/Main.hs#L55-L72
 
-put :: String -> Compressed
-put string = go (makeTrack string) where
+put :: String -> CompressedString
+put string = compact (go ("", string)) where
 
-  go :: Track -> Compressed
-  go track@(_,ahead)
-    | null ahead       = []
-    | length ahead < 3 = [Left ahead]
-    | otherwise        =
-      case tryCompressingChunk track of
-      Nothing ->
-        let size = measureUncompressableChunk track
-        in  Left (take size ahead) : go (advanceCursor size track)
-      Just ref ->
-        let (i, size) = ref
-        in Right ref : go (advanceCursor size track)
-
+  go :: Track -> CompressedString
+  go (_, []) = []
+  go track@(behind, ahead)
+    | size < 3  = Left (take advanceSize ahead) : next
+    | otherwise = Right ref : next
+    where
+    next = go (advanceCursor advanceSize track)
+    advanceSize = if size > 0 then size else 1
+    (i, size) = ref
+    ref = longestMatch behind ahead
 
 
-makeTrack = (,) ""
+
+compact :: CompressedString -> CompressedString
+compact = go where
+  go [] = []
+  go (Right ref:xs)   = Right ref : go xs
+  go (Left string:xs) = Left (string ++ concat (Either.lefts more)) : go rest
+    where
+    (more, rest) = span Either.isLeft xs
+
+
 
 advanceCursor :: Int -> Track -> Track
 advanceCursor n (behind, ahead) =
   (behind ++ take n ahead, drop n ahead)
 
 
--- NOTE Track MUST have 3+ ahead
--- NOTE that "3" is the minimum compressable size
-measureUncompressableChunk :: Track -> Int
-measureUncompressableChunk = go 0 where
-  go size (_, [])               = size
-  go size track@(behind, ahead) =
-    case findMatchStart behind (take 3 ahead) of
-      Nothing -> go (size + 1) (advanceCursor 1 track)
-      Just _  -> size
 
+{- Find the longest match of B in A
 
+For example, given "bacba" "bac"
 
--- NOTE Track MUST have 3+ ahead
--- NOTE that "3" is the minimum compressable size
-tryCompressingChunk :: Track -> Maybe CompressionRef
-tryCompressingChunk (behind, ahead) =
-  go Nothing (take 3 ahead) where
+        1. |bac|ba    2. bac|ba|
+           |bac|            |ba|c
 
-  go :: Maybe CompressionRef -> String -> Maybe CompressionRef
-  go lastMatch prospect =
-    case findMatchStart behind prospect of
-    Nothing ->
-      lastMatch
-    Just i  ->
-      let prospectSize = length prospect
-          newMatch = Just (i, prospectSize)
-      in if elem prospectSize [length behind, length ahead]
-         then newMatch
-         else go newMatch (take (prospectSize + 1) ahead)
+    Ref    (0,3)         (4,2)
 
+pick Match 1 since 3 > 2.
 
+* A match is represented by a tuple: First, the index
+of where the match starts; Second, the match length.
 
-
+* A match length of `0` means there were no matches,
+for example `(_,0)`. -}
+longestMatch :: String -> String -> Reference
+longestMatch v x =
+  -- Get a list of all possible matches.
+  -- Then just select the one of maximum size.
+  List.maximumBy (Ord.comparing snd) matches
+  where
+  matches = [(i, length (takeWhileEqual rest x))
+            | (i, rest) <- zip [0..] (List.tails v)]
 
 
 
 -- General Helpers --
-
-
-
-findMatchStart :: Eq a => [a] -> [a] -> Maybe Int
-findMatchStart list subSeq = go 0 list where
-  go i xs
-    | takeChunk xs == subSeq = Just i
-    | length xs < size       = Nothing
-    | otherwise              = go (i + 1) (tail xs)
-  size = length subSeq
-  takeChunk = take (length subSeq)
 
 
 
