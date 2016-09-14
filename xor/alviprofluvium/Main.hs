@@ -2,8 +2,9 @@ import System.IO
 import System.Environment
 import System.Directory
 import Data.Bits
+import qualified Data.Text as T
+import Data.Text.Encoding
 import qualified Data.ByteString.Lazy as BS
-import qualified Data.ByteString.Lazy.Char8 as C
 
 encrypt :: BS.ByteString -> BS.ByteString -> BS.ByteString
 encrypt txt key = BS.pack $ BS.zipWith xor txt rollingKey
@@ -18,7 +19,7 @@ main = do
 
   (tempName, tempHandle) <- openBinaryTempFile "." "temp"
   
-  BS.hPut tempHandle $ encrypt contents $ C.pack key
+  BS.hPut tempHandle $ encrypt contents $ (BS.fromStrict . encodeUtf8 . T.pack) key
 
   hClose handle
   hClose tempHandle
