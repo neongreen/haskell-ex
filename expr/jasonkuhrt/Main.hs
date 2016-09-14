@@ -6,8 +6,8 @@
     * With a data model for arithmatic, write functions to
       print and evaluate expressions.
     * Use `div` for division.
-    * Bonus: Only print parenthesis when they are needed.
     * Remember: Use parenthesis around negative numbers.
+    * Bonus: Only print parenthesis when they are needed. TODO
 
  ## Example
 
@@ -20,14 +20,23 @@
 
 import qualified Text.Printf as Print
 
+
+
 main :: IO ()
-main =
-  print (Mul (Number 3)
-             (Add (Number 5)
-                  (Div
-                    (Sub (Number 7)
-                         (Number 1))
-                    (Number 2))))
+main = do
+  print example
+  print (eval example)
+
+example :: Expr
+example =
+  Mul (Number 3)
+       (Add (Number 5)
+            (Div
+              (Sub (Number 7)
+                   (Number 1))
+              (Number 2)))
+
+
 
 data Expr
   = Number Int
@@ -42,3 +51,10 @@ instance Show Expr where
   show (Add ex1 ex2) = Print.printf "(%s + %s)" (show ex1) (show ex2)
   show (Div ex1 ex2) = Print.printf "(%s / %s)" (show ex1) (show ex2)
   show (Sub ex1 ex2) = Print.printf "(%s - %s)" (show ex1) (show ex2)
+
+eval :: Expr -> Int
+eval (Number int)  =      int
+eval (Mul ex1 ex2) =      (*) (eval ex1) (eval ex2)
+eval (Add ex1 ex2) =      (+) (eval ex1) (eval ex2)
+eval (Div ex1 ex2) =      div (eval ex1) (eval ex2)
+eval (Sub ex1 ex2) = subtract (eval ex2) (eval ex1) -- Yes, arguments flipped
