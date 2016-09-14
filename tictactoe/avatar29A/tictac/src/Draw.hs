@@ -3,6 +3,7 @@ module Draw (BoardToken (..), BoardPosition (..),
              drawToken,
              drawPrompt,
              drawError,
+             reset,
              convertStrToPosition) where
 
 import System.Console.ANSI
