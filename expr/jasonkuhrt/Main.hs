@@ -4,17 +4,17 @@
  ## Goal
 
     * With a data model for arithmatic, write functions to
-      print and evaluate expressions.
+      print and exprEvaluate expressions.
     * Use `div` for division.
     * Remember: Use parenthesis around negative numbers.
     * Bonus: Only print parenthesis when they are needed. TODO
 
  ## Example
 
-    > show (Mul (Number 3) (Add (Number 5) (Number 7)))
+    > exprShow (Mul (Number 3) (Add (Number 5) (Number 7)))
     "3*(5+7)"
 
-    > evalExpr (Mul (Number 3) (Add (Number 5) (Number 7)))
+    > exprEval (Mul (Number 3) (Add (Number 5) (Number 7)))
     36
 -}
 
@@ -24,8 +24,8 @@ import qualified Text.Printf as Print
 
 main :: IO ()
 main = do
-  print example
-  print (eval example)
+  (putStrLn . exprShow) example
+  (print . exprEval) example
 
 example :: Expr
 example =
@@ -45,16 +45,38 @@ data Expr
   | Mul Expr Expr
   | Div Expr Expr
 
-instance Show Expr where
-  show (Number int)  = show int
-  show (Mul ex1 ex2) = Print.printf "(%s * %s)" (show ex1) (show ex2)
-  show (Add ex1 ex2) = Print.printf "(%s + %s)" (show ex1) (show ex2)
-  show (Div ex1 ex2) = Print.printf "(%s / %s)" (show ex1) (show ex2)
-  show (Sub ex1 ex2) = Print.printf "(%s - %s)" (show ex1) (show ex2)
 
-eval :: Expr -> Int
-eval (Number int)  =      int
-eval (Mul ex1 ex2) =      (*) (eval ex1) (eval ex2)
-eval (Add ex1 ex2) =      (+) (eval ex1) (eval ex2)
-eval (Div ex1 ex2) =      div (eval ex1) (eval ex2)
-eval (Sub ex1 ex2) = subtract (eval ex2) (eval ex1) -- Yes, arguments flipped
+
+exprShow :: Expr -> String
+exprShow (Number int) = show int
+exprShow ex           = Print.printf "(%s %s %s)"
+    (exprShow (left ex))
+    (operator ex)
+    (exprShow (right ex))
+  where
+  operator (Mul _ _) = "*"
+  operator (Add _ _) = "+"
+  operator (Div _ _) = "/"
+  operator (Sub _ _) = "-"
+  operator _ = ""
+
+  left (Mul ex1 _) = ex1
+  left (Add ex1 _) = ex1
+  left (Div ex1 _) = ex1
+  left (Sub ex1 _) = ex1
+  left x           = x
+
+  right (Mul _ ex2) = ex2
+  right (Add _ ex2) = ex2
+  right (Div _ ex2) = ex2
+  right (Sub _ ex2) = ex2
+  right x           = x
+
+
+
+exprEval :: Expr -> Int
+exprEval (Number int)  = int
+exprEval (Mul ex1 ex2) = (*) (exprEval ex1) (exprEval ex2)
+exprEval (Add ex1 ex2) = (+) (exprEval ex1) (exprEval ex2)
+exprEval (Div ex1 ex2) = div (exprEval ex1) (exprEval ex2)
+exprEval (Sub ex1 ex2) = (-) (exprEval ex1) (exprEval ex2)
