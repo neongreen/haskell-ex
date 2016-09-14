@@ -1,4 +1,3 @@
-
 {- #  Binary Conversion
 
   ##  Spec
@@ -26,10 +25,7 @@
       Each digit is referred to as a bit.
 -}
 
-
-
-module Main where
-
+import Test.QuickCheck ((===))
 import qualified Test.QuickCheck as QS
 
 type Binary = String
@@ -41,7 +37,7 @@ main =
   (QS.quickCheck . QS.property) identityProp
   where
   identityProp (QS.NonNegative n) =
-    n == (toDecimal . toBinary) n
+    n === (toDecimal . toBinary) n
 
 
 
@@ -82,6 +78,37 @@ toDecimal =
   where
   addUp val (sigDig, '0') = val
   addUp val (sigDig, '1') = val + 2^sigDig
+
+{- Feedback
+
+I was shown simpler/more concise ways to implement this.
+
+1.  Array comprehensions + pattern match
+    via @neongreen
+
+    This solution leverages array comprehension (1) syntax.
+    The pattern matching used to draw values out (2) filters
+    out data that we don't need: significant digits of digit 0
+    which cotribute zero value to the final sum!
+
+        sum [2^sigDig | (sigDig, '1') <- zip [0..] (reverse xs)]
+            ^1          ^2
+
+2.  Math AKA "correct" engineering solution
+    via @DL
+
+    I love this but given my knowledge/way of thinking I do not think
+    it would be within ready grasp to arrive at this solution. It
+    would require at least understanding the correspondance between
+    powers of the significant digit versus repeated value doubling (1)
+    plus one or zero (2) neigther of which seem like the kind of insight
+    I would strike upon. If this was the _only_ way to solve the problem
+    I assume that I would eventually arrive at it, though :).
+
+        foldl' (\val flag -> val * 2 + digitToInt flag) 0
+                                 ^1  ^2
+-}
+
 
 
 
