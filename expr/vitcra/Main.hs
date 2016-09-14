@@ -35,7 +35,7 @@ showExpr :: Expr -> String
 showExpr e = case e of
   Number n -> if n < 0 then '(' : show n ++ ")" else show n
   Add e1 e2 -> showExpr e1 ++ '+' : showExpr e2
-  Sub e1 e2 -> showExpr e1 ++ '-' : showExpr e2
+  Sub e1 e2 -> showExpr e1 ++ '-' : wrapAdd e2
   Mul e1 e2 -> wrapAdd e1 ++ '*' : wrapAdd e2
   Div e1 e2 -> wrapAdd e1 ++ " div " ++ wrapDiv e2
   where
@@ -50,14 +50,15 @@ showExprPro e = str where
   (minus, str) = helper e
   helper e = case e of
     Number n -> (n < 0, show n)
-    Add e1 e2 -> (minus1, str1 ++ (if minus2 then str2 else '+' : str2))
+    Add e1 e2 -> (minus1, str1 ++ if minus2 then str2 else '+' : str2)
       where
         (minus1, str1) = helper e1
         (minus2, str2) = helper e2
-    Sub e1 e2 -> (minus1, str1 ++ (if minus2 then '+':tail str2 else str2))
+    Sub e1 e2 -> (minus1, str1 ++ if minus2 then '+':tail str2 else '-' : str2)
       where
         (minus1, str1) = helper e1
-        (minus2, str2) = helper e2
+        (minus2, tmp2) = helper e2
+        str2 = if isAddition e2 then wrap tmp2 else tmp2
     Mul e1 e2 -> (minus1 && (not . isAddition) e1, str1 ++ '*' : str2)
       where
         (minus1, tmp1) = helper e1
