@@ -13,7 +13,7 @@ encrypt txt key = BS.pack $ BS.zipWith xor txt rollingKey
 
 main :: IO ()
 main = do
-  (fileName : key : _) <- getArgs
+  [fileName, key] <- getArgs
   handle <- openBinaryFile fileName ReadMode
   contents <- BS.hGetContents handle
 
@@ -24,5 +24,4 @@ main = do
   hClose handle
   hClose tempHandle
 
-  removeFile fileName
   renameFile tempName fileName
