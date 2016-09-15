@@ -2,14 +2,17 @@ module Game(startGame) where
 
   import Control.Monad
   import Data.Char
+  import Data.List
   import Draw
 
   type ErrorMessage = String
-  type Cell = (Int, Int, Char)
+  type TokenSymbol = Char
+  type Cell = (Char, Int, TokenSymbol)
+  type Board = [Cell]
 
   data Token = Token Char | X | O
   data Player = Player Token | Computer Token
-  data Board = Board [Cell]
+
   data GameError = WrongPosition | PositionIsBusy
   data Game = Game {
                   currentPlayer :: Player
@@ -27,7 +30,7 @@ module Game(startGame) where
 
       player = Player (Token ch)
       computer = makeComputer ch
-      board = Board []
+      board = []
 
       in
         Game {
@@ -47,18 +50,33 @@ module Game(startGame) where
   processingGame :: Game -> Game
   processingGame (GameEnded p) = GameEnded p
 
-
   -- checkPosition check's can would the player put
-  checkPosition :: Player -> Game -> (Bool, ErrorMessage)
-  checkPosition = undefined
+  checkPosition :: BoardPosition -> Game -> (Bool, ErrorMessage)
+  checkPosition (Position x y) game =
+    case foundedPositions of
+      [] -> (True, "")
+      [x] -> (False, "Selected position was busy")
+    where
+      foundedPositions = filter (\(pX, pY, _) -> pX == x && pY == y) (board game)
 
-  -- go put user's token to a cell
+  -- searchPosition is looking for a free position
+  searchPosition :: Game -> BoardPosition
+  searchPosition game =
+    undefined
+
+  -- go
   go :: Player -> Either (Game, GameError) Game
-  go (Computer t) = Right (aoGo (Computer t))
+  go (Computer t) = Right (aiGo (Computer t))
+  go (Player t) = playerGo (Player t)
 
   -- aiGo does step for AI
-  aoGo :: Player -> Game
-  aoGo (Computer t) = undefined
+  aiGo :: Player -> Game
+  aiGo (Computer t) = undefined
+
+  -- palyerGo asks player step about
+  playerGo :: Player -> Either (Game, GameError) Game
+  playerGo (Player t) =
+    undefined
 
   promptPlayerType :: IO Char
   promptPlayerType = do
@@ -71,12 +89,10 @@ module Game(startGame) where
       else
         promptPlayerType
 
-  promptMove :: IO()
+  promptMove :: IO BoardPosition
   promptMove = do
     pos <- drawPrompt
     case convertStrToPosition pos of
       PositionUnsupported _ ->
         promptMove
-      pos -> do
-        drawToken Cross pos
-        promptMove
+      pos -> return pos
