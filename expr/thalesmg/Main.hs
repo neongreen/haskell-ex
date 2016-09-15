@@ -8,9 +8,9 @@ data Expr
 showExpr :: Expr -> String
 showExpr expr = case expr of
     Add e1 e2 -> showExpr  e1 ++ "+" ++ showExpr  e2
-    Sub e1 e2 -> showExpr  e1 ++ "/" ++ showExpr  e2
+    Sub e1 e2 -> showExpr  e1 ++ "-" ++ showExpr  e2
     Mul e1 e2 -> parenExpr e1 ++ "*" ++ parenExpr e2
-    Div e1 e2 -> parenExpr e1 ++ "*" ++ parenExpr e2
+    Div e1 e2 -> parenExpr e1 ++ "/" ++ parenExpr e2
     Number n  -> if n < 0 then "(" ++ show n ++ ")" else show n
   where
     parenExpr expr' = case expr' of
