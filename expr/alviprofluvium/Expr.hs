@@ -11,10 +11,26 @@ showExpr :: Expr -> String
 showExpr (Number n)
   | n < 0     = "(" ++ show n ++ ")"
   | otherwise = show n
-showExpr (Add a b) = showExpr a ++ "+" ++ showExpr b
-showExpr (Sub a b) = showExpr a ++ "-" ++ showExpr b
-showExpr (Mul a b) = showExpr a ++ "*" ++ showExpr b
-showExpr (Div a b) = showExpr a ++ "/" ++ showExpr b
+showExpr (Add a b) = parens a ++ "+" ++ parens b
+  where 
+  parens a@(Sub _ _) = "(" ++ showExpr a ++ ")"
+  parens a = showExpr a
+showExpr (Sub a b) = parens a ++ "-" ++ parens b
+  where 
+  parens a@(Add _ _) = "(" ++ showExpr a ++ ")"
+  parens a = showExpr a
+showExpr (Mul a b) = parens a ++ "*" ++ parens b
+  where
+  parens a@(Add _ _) = "(" ++ showExpr a ++ ")"
+  parens a@(Sub _ _) = "(" ++ showExpr a ++ ")"
+  parens a = showExpr a
+showExpr (Div a b) = parens a ++ "/" ++ parens b
+  where
+  parens a@(Add _ _) = "(" ++ showExpr a ++ ")"
+  parens a@(Sub _ _) = "(" ++ showExpr a ++ ")"
+  parens a@(Div _ _) = "(" ++ showExpr a ++ ")"
+  parens a = showExpr a
+
 
 evalExpr :: Expr -> Int
 evalExpr (Number n) = n
