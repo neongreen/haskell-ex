@@ -57,8 +57,9 @@ showExprPro e = str where
     Sub e1 e2 -> (minus1, str1 ++ if minus2 then '+':tail str2 else '-' : str2)
       where
         (minus1, str1) = helper e1
-        (minus2, tmp2) = helper e2
-        str2 = if isAddition e2 then wrap tmp2 else tmp2
+        (tmpminus2, tmp2) = helper e2
+        (minus2, str2) = if isAddition e2
+          then (False, wrap tmp2) else (tmpminus2, tmp2)
     Mul e1 e2 -> (minus1 && (not . isAddition) e1, str1 ++ '*' : str2)
       where
         (minus1, tmp1) = helper e1
