@@ -108,9 +108,7 @@ With this knowledge logic of when to use parens is as follows:
 -}
 
 visualize :: Expr -> String
-visualize (Number n)
-  | n < 0     = parenthesize  (show n)
-  | otherwise = show n
+visualize (Number n) = ifthen (n < 0) parenthesize . show $ n
 visualize p          =
   Print.printf "%s %s %s" goLeft (op p) goRight
   where
