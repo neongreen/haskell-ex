@@ -109,13 +109,13 @@ With this knowledge logic of when to use parens is as follows:
 
 visualize :: Expr -> String
 visualize (Number n)
-  | n < 0     = parenify  (show n)
+  | n < 0     = parenthesize  (show n)
   | otherwise = show n
 visualize p          =
   Print.printf "%s %s %s" goLeft (op p) goRight
   where
-  goLeft  = ifthen (needsParensLHS p) parenify . visualize $ left p
-  goRight = ifthen (needsParensRHS p) parenify . visualize $ right p
+  goLeft  = ifthen (needsParensLHS p) parenthesize . visualize $ left p
+  goRight = ifthen (needsParensRHS p) parenthesize . visualize $ right p
 
   op (Mul _ _)  = "*"
   op (Div _ _)  = "/"
@@ -180,8 +180,8 @@ right (Number x) = Number x
 
 -- General Helpers --
 
-parenify :: String -> String
-parenify = Print.printf "(%s)"
+parenthesize :: String -> String
+parenthesize = Print.printf "(%s)"
 
 ifthen :: Bool -> (a -> a) -> a -> a
 ifthen True  f val = f val
