@@ -51,10 +51,10 @@ vCompressWith (sp, s) (vp, v)
 -- | Same idea as vCompressWith, but here we look for subseq among
 -- | the Left in [Compressed a]
 compressWith :: (Eq a) => Sub a -> [Compressed a] -> [Compressed a]
-compressWith (sp, s) = foldr f []
+compressWith (sp, s) = concatMap f
   where
-    f (Right sub) acc = Right sub : acc
-    f (Left (vp, v)) acc = cv ++ acc where
+    f (Right sub)= [Right sub]
+    f (Left (vp, v)) = cv where
       cv = vCompressWith (sp, s) (vp, v)
 
 slice :: Int -> Int -> [Compressed a] -> Vector a
@@ -82,7 +82,6 @@ compress str = result where
   loop n p cmpd
     | n < minSubLength = cmpd
     | p > lv - n = loop (n-1) 0 cmpd
-    | further == cmpd = loop n (p+1) cmpd
     | otherwise = loop n (p+1) further
     where
       sub = slice p n cmpd
