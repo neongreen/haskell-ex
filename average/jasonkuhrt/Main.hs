@@ -1,5 +1,8 @@
+{- # Moving Mean
 
-
+See an introduction about moving means at
+https://en.wikipedia.org/wiki/Moving_average
+-}
 
 main :: IO ()
 main = do
@@ -10,27 +13,41 @@ main = do
   exampleSet = [1,5,3,8,7,9,6]
 
 
-{- | Calculate the simple moving mean.
-
-See an introduction about moving means at
-https://en.wikipedia.org/wiki/Moving_average -}
+{- | Calculate the simple moving mean. -}
 smm :: Int -> [Float] -> [Float]
-smm windowSize dataPoints                      -- Sensible Guards:
-  | windowSize == 1 = dataPoints               -- means of size 1 are ids
-  | windowSize == 0 = map (const 0) dataPoints -- means of size 0 are 0s
-  | windowSize <= 0 = []                       -- nonsense
-  | otherwise       = go 1 dataPoints
-  where
-  go n xs
-    -- Stop when the shifting data shrinks smaller than window
-    -- If window is immature then do grow but no shift
-    -- If window is mature then no grow but do shift
-    | n > length xs  = []
-    | n < windowSize = mean (take n xs) : go (n + 1) xs
-    | otherwise      = mean (take n xs) : go n (drop 1 xs)
+smm = growMove mean
 
 
 {- | Calculate the mean value of a set. -}
 mean :: [Float] -> Float
 mean [] = 0
 mean xs = sum xs / (realToFrac . length) xs
+
+
+{- | Repeatedly apply f to subsets taken from a moving window.
+
+The window must first mature before sliding. For example:
+
+    growMove f 4 [1,5,3,8,7,9,6]
+
+    -- Below target size. Grow window by 1 for each step
+    f [1]         = a
+    f [1,5]       = b
+    f [1,5,3]     = c
+    -- At/above target size. Now repeatedly drop 1 for each step
+    f [1,5,3,8]   = d
+    f [5,3,8,7]   = e
+    f [3,8,7,9]   = f
+    f [8,7,9,6]   = g
+
+    returns [a,b,c,d,e,f,g]
+-}
+growMove :: ([a] -> a) -> Int -> [a] -> [a]
+growMove f windowSize xs
+  | windowSize <= 0 = []
+  | otherwise = go 1 xs
+  where
+  go size rest
+    | size > length rest = []
+    | size < windowSize  = f (take size rest) : go (size + 1) rest
+    | otherwise          = f (take size rest) : go size (drop 1 rest)
