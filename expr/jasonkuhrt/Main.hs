@@ -25,6 +25,7 @@ import qualified Text.Printf as Print
 main :: IO ()
 main = do
   putStrLn "\n# Required\n"
+  putStrLn . visualize $ Div (Number 10) (Number (-1))
   putStrLn . visualize $ Sub (Number 2) (Sub (Number 2) (Number 1))
   putStrLn . visualize $ Div (Number 2) (Sub (Number 2) (Number 1))
   putStrLn . visualize $ Div (Sub (Number 2) (Number 1)) (Number 2)
@@ -36,7 +37,7 @@ main = do
 
 example :: Expr
 example =
-  Mul (Number 3)
+  Mul (Number (-3))
       (Add (Number 5)
            (Div (Sub (Number 7)
                      (Number 1))
@@ -107,7 +108,9 @@ With this knowledge logic of when to use parens is as follows:
 -}
 
 visualize :: Expr -> String
-visualize (Number n) = show n
+visualize (Number n)
+  | n < 0     = parenify  (show n)
+  | otherwise = show n
 visualize p          =
   Print.printf "%s %s %s" goLeft (op p) goRight
   where
