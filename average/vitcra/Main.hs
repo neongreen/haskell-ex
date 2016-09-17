@@ -40,6 +40,13 @@ average3 n xs = zipWith f (movingSum3 n xs) ([1..n] ++ repeat n) where
   f a k = a / fromIntegral k
 
 
+-- | Artyom's pipeline approach
+movingSum4 n xs =
+  take (length xs) . map (sum . take n) . tails $ replicate (n-1) 0 ++ xs
+
+average4 :: (Fractional a) => Int -> [a] -> [a]
+average4 n xs = zipWith f (movingSum4 n xs) ([1..n] ++ repeat n) where
+  f a k = a / fromIntegral k
 
 -- main :: IO ()
 -- main = do
@@ -51,4 +58,5 @@ average3 n xs = zipWith f (movingSum3 n xs) ([1..n] ++ repeat n) where
 main = defaultMain [
  bench "average1" $nf (average1 100) ([1..1000]::[Double]),
  bench "average2" $ nf (average2 100) ([1..1000]::[Double]),
- bench "average2" $ nf (average3 100) ([1..1000]::[Double])]
+ bench "average3" $ nf (average3 100) ([1..1000]::[Double]),
+ bench "average4" $ nf (average4 100) ([1..1000]::[Double])]
