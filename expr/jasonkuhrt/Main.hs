@@ -18,6 +18,7 @@ import qualified Text.Printf as Print
 main :: IO ()
 main = do
   putStrLn "\n# Required\n"
+  putStrLn . visualize $ Sub (Number 1) (Add (Number 2) (Number 3))
   putStrLn . visualize $ Div (Number 10) (Number (-1))
   putStrLn . visualize $ Sub (Number 2) (Sub (Number 2) (Number 1))
   putStrLn . visualize $ Div (Number 2) (Sub (Number 2) (Number 1))
@@ -111,11 +112,13 @@ Parenthesis will only be used where necessary.
 
     With this knowledge, the logic of when to use parens is:
 
-        if: exp op is _lower_ opPrecedence than parent-exp op
+        if: exp op is _lower_ precedence than parent-exp op
+          REQUIRED
+        if: parent-exp op is _not_ associative
           REQUIRED
         if: exp is RHS
-          if: exp op is _same_ as parent-exp op
-            if: exp op is _not_ associtive
+          if: exp op precedence equal to parent-exp op precedence
+            if: parent-exp op is _not_ associtive
               REQUIRED
         else
           OPTIONAL
@@ -145,8 +148,9 @@ visualize p          =
 
 needsParensRHS :: Expr -> Bool
 needsParensRHS p = let c = right p in
-  opPrecedence p > opPrecedence c ||
-  (isOpSame p c && (not . isOpAssoc) c)
+     opPrecedence p > opPrecedence c
+  || opPrecedence p == opPrecedence c &&
+     (not . isOpAssoc) p
 
 needsParensLHS :: Expr -> Bool
 needsParensLHS p =
@@ -175,15 +179,6 @@ isOpAssoc :: Expr -> Bool
 isOpAssoc (Mul _ _) = True
 isOpAssoc (Add _ _) = True
 isOpAssoc _         = False
-
-
-{- | Do two given expressions use the same operators? -}
-isOpSame :: Expr -> Expr -> Bool
-isOpSame (Mul _ _) (Mul _ _) = True
-isOpSame (Div _ _) (Div _ _) = True
-isOpSame (Add _ _) (Add _ _) = True
-isOpSame (Sub _ _) (Sub _ _) = True
-isOpSame _         _         = False
 
 
 left :: Expr -> Expr
