@@ -45,7 +45,7 @@ The window must first mature before sliding. For example:
 growMove :: ([a] -> a) -> Int -> [a] -> [a]
 growMove f windowSize xs
   | windowSize <= 0 = []
-  | otherwise = go 1 xs
+  | otherwise       = go 1 xs
   where
   go size rest
     | size > length rest = []
