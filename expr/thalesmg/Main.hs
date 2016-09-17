@@ -8,15 +8,18 @@ data Expr
 showExpr :: Expr -> String
 showExpr expr = case expr of
     Add e1 e2 -> showExpr  e1 ++ "+" ++ showExpr  e2
-    Sub e1 e2 -> showExpr  e1 ++ "-" ++ showExpr  e2
+    Sub e1 e2 -> showExpr  e1 ++ "-" ++ parenExpr e2
     Mul e1 e2 -> parenExpr e1 ++ "*" ++ parenExpr e2
-    Div e1 e2 -> parenExpr e1 ++ "/" ++ parenExpr e2
+    Div e1 e2 -> parenExpr e1 ++ "/" ++ fullParen e2
     Number n  -> if n < 0 then "(" ++ show n ++ ")" else show n
   where
     parenExpr expr' = case expr' of
       Add _ _ -> "(" ++ showExpr expr' ++ ")"
       Sub _ _ -> "(" ++ showExpr expr' ++ ")"
-      _         ->        showExpr expr'
+      _       ->        showExpr expr'
+    fullParen expr' = case expr' of
+      Number _ ->        showExpr expr'
+      _        -> "(" ++ showExpr expr' ++ ")"
       
 evalExpr :: Expr -> Int      
 evalExpr expr = case expr of
