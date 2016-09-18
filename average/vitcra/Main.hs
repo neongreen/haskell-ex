@@ -74,4 +74,4 @@ main = defaultMain [
  bench "average2" $ nf (average2 100) ([1..1000]::[Double]),
  bench "average3" $ nf (average3 100) ([1..1000]::[Double]),
  bench "average4" $ nf (average4 100) ([1..1000]::[Double]),
- bench "average5" $ nf (average4 100) ([1..1000]::[Double])]
+ bench "average5" $ nf (average5 100) ([1..1000]::[Double])]
