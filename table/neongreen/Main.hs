@@ -19,5 +19,5 @@ padTable :: [[String]] -> [[String]]
 padTable table = map padRow table
   where
     columns = transpose table
-    columnWidths = map (maximum . map length) $ transpose table
+    columnWidths = map (maximum . map length) columns
     padRow row = zipWith pad columnWidths row
