@@ -1,0 +1,30 @@
+name:                bigint
+version:             0.1.0.0
+synopsis:            Big integers
+description:         Big integers
+license:             BSD3
+license-file:        LICENSE
+author:              Artyom
+maintainer:          yom@artyom.me
+copyright:           2016 Artyom
+category:            Data
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     BigInt
+  build-depends:       base >= 4.7 && < 5
+  default-language:    Haskell2010
+
+test-suite test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , bigint
+                     , hspec
+                     , QuickCheck
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
