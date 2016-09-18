@@ -44,6 +44,7 @@ data Expr
   | Sub Expr Expr
   | Mul Expr Expr
   | Div Expr Expr
+  deriving (Show)
 
 
 
@@ -165,7 +166,7 @@ visualize p          =
   op (Sub _ _)  = "-"
   op (Add _ _)  = "+"
   -- Impossible case. See parent pattern matches.
-  op _          = error "No operator for leaves"
+  op _          = error "visualize: op: No operator for leaves"
 
 
 -- TODO Correct LA/R RA/L paren requirement. See comments above
