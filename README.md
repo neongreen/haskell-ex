@@ -6,15 +6,35 @@ These are exercises for the Alpha study group (if you want to participate, first
 
 The exercises are beginner-to-intermediate level. Expect to learn how to write algorithms, solve simple problems with Haskell, use common libraries, write sites, talk to databases, create interfaces, parse things, do weird type-level stuff, and more.
 
-## Stuff that you should know if you're already in
+## Workflow
 
-To submit a solution, create a folder named `<exercise code>/<your Github nick>`. It doesn't matter how to call the `.hs` file, but `Main.hs` is a good choice. If you have commit access – and you should – forking the repository is *not* needed. If you can't do `git push`, it might be because others have changed the repository in the meantime; doing `git pull --rebase` should fix it.
+### Submitting Solutions
 
-Don't forget to use [hlint](https://github.com/ndmitchell/hlint) on your code – it often gives good suggestions on how to improve it. (They aren't *always* good, however! If you're unsure, ask.)
+1. **Setup your namespace.**
+    1. Create a branch named `<exercise-code>/<your-gh-handle>`
+    2. Create a folder named `<exercise-code>/<your-gh-handle>`
+3. **Author your solution.**
+    Work in your namespace. It doesn't matter what you call your `.hs` file, but `Main.hs` is a good default.
+4. **Get Feedback.**
+    Once you are ready for feedback (not necessarially done) open a pull request.
+    * _Suggestion_ If you are not done then consider writing a [task list](https://github.com/blog/1375-task-lists-in-gfm-issues-pulls-comments) in the description. This convention transparently communicates your progress.
+    * _Suggestion_ Feedback will probably result in additional tasks to do so updating the list may be desirable, but then again certain tasks may not be worth such detail. Use judgement, whatever helps.
+5. **Iterate.**
+    Discuss feedback with the reviewer. Integrate changes into your solution. Repeat as needed.
+5. **Finish.**
+    Once you and your reviewer are satisfied with your answer, merge! There is no formal policy on whether to use [squash](https://github.com/blog/2141-squash-your-commits) or not, but for now feel free to include all your commits (better documents your learning?).
 
-You can see yours (and others') progress in [this table](https://docs.google.com/spreadsheets/d/1PEF7K42M-cq1XgiAaqwf-XLeJP2wo3Dc8pU3SsD_R8s/edit?usp=sharing).
+### Weekly Review
 
 At the end of each week each exercise is explained by someone who has solved it.
+
+### Stuff that you should know if you're already in
+
+* Don't forget to use [hlint](https://github.com/ndmitchell/hlint) on your code – it often gives good suggestions on how to improve it. (They aren't *always* good, however! If you're unsure, ask.)
+
+* You can see yours (and others') progress in [this table](https://docs.google.com/spreadsheets/d/1PEF7K42M-cq1XgiAaqwf-XLeJP2wo3Dc8pU3SsD_R8s/edit?usp=sharing).
+
+
 
 ## Week 1 (August 26 – September 4)
 
