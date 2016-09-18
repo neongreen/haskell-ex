@@ -14,12 +14,12 @@ main = do
 
 
 {- | Calculate the simple moving mean. -}
-smm :: Int -> [Float] -> [Float]
+smm :: Int -> [Double] -> [Double]
 smm = growMove mean
 
 
 {- | Calculate the mean value of a set. -}
-mean :: [Float] -> Float
+mean :: [Double] -> Double
 mean [] = 0
 mean xs = sum xs / (realToFrac . length) xs
 
