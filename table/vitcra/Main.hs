@@ -15,22 +15,17 @@ normalize ss = (length ss, n, concatMap f rows)
 
 
 lengthMaybeInt :: Maybe Int -> Int
-lengthMaybeInt (Just i) = length $ show i
-lengthMaybeInt _ = 0
+lengthMaybeInt = length . showMaybeInt
 
 showMaybeInt :: Maybe Int -> String
-showMaybeInt (Just i) = show i
-showMaybeInt _ = ""
+showMaybeInt = maybe "" show
 
-pad :: Pad -> Int -> String -> String
-pad p n s
-  | ls >= n = s
-  | otherwise =
-      if p == L
-      then replicate (n-ls) ' ' ++ s
-      else s ++ replicate (n-ls) ' '
-  where
-    ls = length s
+pad p n s =
+ case p of
+   L -> padding ++ s
+   R -> s ++ padding
+ where
+   padding = replicate (n - length s) ' '
 
 showTable :: [[String]] -> String
 showTable numbers =
