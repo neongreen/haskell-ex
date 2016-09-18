@@ -48,6 +48,20 @@ average4 :: (Fractional a) => Int -> [a] -> [a]
 average4 n xs = zipWith f (movingSum4 n xs) ([1..n] ++ repeat n) where
   f a k = a / fromIntegral k
 
+-- | @thalesmg' refactor of movingSum2
+movingSum5 :: (Fractional a) => Int -> [a] -> [a]
+movingSum5 w lst =
+  let
+    shiftedList = zip lst $ replicate w 0 ++ lst
+    go _ [] = []
+    go acc ((toAdd, toDelete):xs) = (acc + toAdd - toDelete) : go (acc + toAdd - toDelete) xs
+  in
+    go 0 shiftedList
+
+average5 :: (Fractional a) => Int -> [a] -> [a]
+average5 n xs = zipWith f (movingSum5 n xs) ([1..n] ++ repeat n) where
+  f a k = a / fromIntegral k
+
 -- main :: IO ()
 -- main = do
 --   putStrLn
@@ -59,4 +73,5 @@ main = defaultMain [
  bench "average1" $nf (average1 100) ([1..1000]::[Double]),
  bench "average2" $ nf (average2 100) ([1..1000]::[Double]),
  bench "average3" $ nf (average3 100) ([1..1000]::[Double]),
- bench "average4" $ nf (average4 100) ([1..1000]::[Double])]
+ bench "average4" $ nf (average4 100) ([1..1000]::[Double]),
+ bench "average5" $ nf (average4 100) ([1..1000]::[Double])]
