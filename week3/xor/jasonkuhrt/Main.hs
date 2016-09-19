@@ -38,6 +38,54 @@ import qualified Data.Text.Lazy.Encoding as Enc
 
 
 
+{- | CLI to de/encrypt a file.
+
+xor KEY FILEPATH
+
+Multiple runs on the same file toggles encryption due to the nature of XOR.
+NOTE Crashes if CLI arguments are not given correctly.
+
+Example:
+@
+> xor blah ~/test-file.md
+
+==> Reading File
+==> Flipping Encryption
+==> Writing File
+==> Done
+==> Result:
+
+HMkL2
+@
+-}
+main :: IO ()
+main = do
+  [keyString, filePath] <- Env.getArgs
+  let key = (Enc.encodeUtf8 . Text.pack) keyString
+  endecryptFile key filePath
+
+
+
+{- | De/encrypt a file.
+
+NOTE Crashes if file does not exist -}
+endecryptFile :: ByteString -> String -> IO ()
+endecryptFile key filePath = do
+  contents <- B.readFile filePath
+  putStrLn "==> Reading File"
+  let encrypted = encrypt key contents
+  putStrLn "==> Flipping Encryption"
+  -- Force the lazily read file to be read otherwise we will attempt to write
+  -- over a file before we've even read it! For example on OSX there is an
+  -- error stating the file is locked (because OS locks the file on read).
+  seq (B.length contents) (B.writeFile filePath encrypted)
+  putStrLn "==> Writing File"
+  putStrLn "==> Done"
+  putStrLn "==> Result:\n"
+  BC8.putStrLn encrypted
+
+
+
 {- | Encrypt a string via key+XOR+key. -}
 encrypt :: ByteString -> ByteString -> ByteString
 encrypt key contents =
@@ -52,6 +100,7 @@ decrypt = encrypt
 
 
 
+{- | Minimal de/encryption test. -}
 test :: IO ()
 test = do
   let key               = "XYZ"
@@ -63,23 +112,3 @@ test = do
   print $ encrypted == encryptedExpected
   print   decrypted
   print $ decrypted == contents
-
-
-
--- NOTE Program crashes if:
---      1. Pattern match fails
---      2. File does not exist (also consider case of mixing arg order)
-main :: IO ()
-main = do
-  args <- Env.getArgs
-  let [keyString, filePath] = args
-  let key = (Enc.encodeUtf8 . Text.pack) keyString
-  contents <- B.readFile filePath
-  putStrLn "==> Reading File"
-  let encrypted = encrypt key contents
-  putStrLn "==> Flipping Encryption"
-  seq (B.length contents) (B.writeFile filePath encrypted)
-  putStrLn "==> Writing File"
-  putStrLn "==> Done"
-  putStrLn "==> Result:\n"
-  BC8.putStrLn encrypted
