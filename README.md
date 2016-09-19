@@ -388,3 +388,125 @@ Enter a table:
 ```
 
 You can assume that the table will be rectangular; handling any extra cases is not needed. The end of the input is marked with a blank line (i.e. you should read the rows until you encounter a blank line).
+
+## Week 4 (September 19 – September 25)
+
+### Draw a spiral `{spiral}`
+
+Given width of a spiral, draw a spiral:
+
+```
+Size? 9
+
+*********
+        *
+******* *
+*     * *
+* *** * *
+* * * * *
+* *   * *
+* ***** *
+*       *
+*********
+```
+
+### Justify text `{justify}`
+
+Given a string, format it to fit N character lines and justify text inside.
+
+Input:
+
+```
+65
+It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness...
+```
+
+Output:
+
+```
+It was the best of  times, it was the worst  of times, it was the
+age of wisdom, it was the age of foolishness, it was the epoch of
+belief, it was  the epoch of  incredulity, it  was the  season of
+Light, it was the season of Darkness...
+```
+
+To justify text, you can simply make some spaces double (or triple if needed, etc). For bonus points, try to choose positions of spaces nicely (e.g. in the first line there are 14 spaces, and 2 of them have to be double if we want to make the line be 65 characters long; we could choose first and second space for that, but instead we chose 5th and 10th so that the lengths of word groups would be approximately equal).
+
+Don't justify the last line or it'll look really ugly.
+
+### Trie `{trie}`
+
+Construct a trie from all words in a dictionary and implement search for words by prefix. Here's an example of a trie for `{cool, cat, coal, bet, bean}`:
+
+```
+    b       c
+   /       / \
+  e       a   o
+ / \     /   / \
+t   a   t   a   o
+    |       |   |
+    n       l   l
+```
+
+You should read the words file, construct a trie, say how many nodes are in the trie (e.g. in the sample one there are 13 nodes), and then answer user's queries to find all words starting with given letters:
+
+```
+Trie created. There are 13 nodes.
+
+> be
+bean bet
+
+> c
+cat coal cool
+
+> co
+coal cool
+```
+
+You can use the following type for the trie (but feel free to use something else):
+
+```
+data Trie a = Empty | Node (Map a (Trie a))
+```
+
+The list of words in available in the `data/` folder in the repository.
+
+### Path finding `{path}`
+
+Read a grid with obstacles, a starting point, and an ending point from a file. Here's a sample grid (obstacles are denoted with `#`, starting point with `A`, ending point with `B`):
+
+```
+A.........#.....#....
+...####...#.....#....
+...#........#####....
+...#..#.....#.......#
+...####.##......#....
+#.......#............
+...#........#.....#..
+......#..............
+...#.......#B..#.....
+.....#..####.........
+#..........###.......
+```
+
+Find the shortest path from A to B and output the grid with the path drawn (or say that there's no path if there's no path):
+
+```
+A+++++++..#.....#....
+...####+..#.....#....
+...#...+....#####....
+...#..#+....#........
+...####+##......#...#
+#......+#............
+...#...+....#.....#..
+......#++++++........
+...#.......#B..#.....
+.....#..####.........
+#..........###.......
+```
+
+You can use [Dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
+
+### JSON printing `{json-print}`
+
+Define a data type for JSON and print it as JSON (without indentation). Don't forget that you should support floating-point numbers and escaping in strings.
