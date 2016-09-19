@@ -7,16 +7,18 @@ spacing = map (maximum . width) . transpose
   width = map length
 
 format :: [String] -> [String]
-format lines = map (concat . zipWith spaced (spacing table)) table
+format lines = map (unwords . zipWith spaced (spacing table)) table
   where 
   table :: [[String]]
   table = map (map (show . (read::String -> Int)) . words) lines
 
   spaced :: Int -> String -> String
-  spaced width xs = take (width + 1) (xs ++ repeat ' ')
+  spaced width xs = replicate (width - length xs) ' ' ++ xs
 
 getLines :: IO [String]
-getLines = takeWhile (not . null) . lines <$> getContents
+getLines = do
+  line <- getLine
+  if null line then return [] else (line:) <$> getLines
 
 main :: IO ()
 main = do
