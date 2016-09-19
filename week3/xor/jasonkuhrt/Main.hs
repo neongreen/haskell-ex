@@ -71,15 +71,15 @@ main = do
 NOTE Crashes if file does not exist -}
 endecryptFile :: ByteString -> String -> IO ()
 endecryptFile key filePath = do
-  contents <- B.readFile filePath
   putStrLn "==> Reading File"
-  let encrypted = encrypt key contents
+  contents <- B.readFile filePath
   putStrLn "==> Flipping Encryption"
+  let encrypted = encrypt key contents
+  putStrLn "==> Writing File"
   -- Force the lazily read file to be read otherwise we will attempt to write
   -- over a file before we've even read it! For example on OSX there is an
   -- error stating the file is locked (because OS locks the file on read).
   seq (B.length contents) (B.writeFile filePath encrypted)
-  putStrLn "==> Writing File"
   putStrLn "==> Done"
   putStrLn "==> Result:\n"
   BC8.putStrLn encrypted
