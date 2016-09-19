@@ -48,5 +48,4 @@ showExpr e = case e of
                     (showExpr x)
 
 parens :: Bool -> String -> String
-parens False s = s
-parens True  s = "(" ++ s ++ ")"
+parens b s = if b then "(" ++ s ++ ")" else s
