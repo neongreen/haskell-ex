@@ -30,11 +30,11 @@ module Main where
 import qualified Data.Bits as Bits
 import qualified System.Environment as Env
 import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy as B
-import qualified Data.ByteString.Lazy.Char8 as BC8
+import qualified Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as Text
-import qualified Data.Text.Lazy.Encoding as Enc
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TL
 
 
 
@@ -61,7 +61,7 @@ HMkL2
 main :: IO ()
 main = do
   [keyString, filePath] <- Env.getArgs
-  let key = (Enc.encodeUtf8 . Text.pack) keyString
+  let key = (TL.encodeUtf8 . TL.pack) keyString
   endecryptFile key filePath
 
 
@@ -72,24 +72,24 @@ NOTE Crashes if file does not exist -}
 endecryptFile :: ByteString -> String -> IO ()
 endecryptFile key filePath = do
   putStrLn "==> Reading File"
-  contents <- B.readFile filePath
+  contents <- BSL.readFile filePath
   putStrLn "==> Flipping Encryption"
   let encrypted = encrypt key contents
   putStrLn "==> Writing File"
   -- Force the lazily read file to be read otherwise we will attempt to write
   -- over a file before we've even read it! For example on OSX there is an
   -- error stating the file is locked (because OS locks the file on read).
-  seq (B.length contents) (B.writeFile filePath encrypted)
+  seq (BSL.length contents) (BSL.writeFile filePath encrypted)
   putStrLn "==> Done"
   putStrLn "==> Result:\n"
-  BC8.putStrLn encrypted
+  BSL.putStrLn encrypted
 
 
 
 {- | Encrypt a string via key+XOR+key. -}
 encrypt :: ByteString -> ByteString -> ByteString
 encrypt key contents =
-  B.pack (B.zipWith Bits.xor (B.cycle key) contents)
+  BSL.pack (BSL.zipWith Bits.xor (BSL.cycle key) contents)
 
 {- | Decrypt a string via key+XOR.
 
