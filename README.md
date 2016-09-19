@@ -39,7 +39,7 @@ The exercises are beginner-to-intermediate level. Expect to learn how to write a
 
 1. **Finish**
 
-    Once your reviewer is satisfied with your solution they will merge! From then on you can make changes to your solution's code in the `master` branch (refactors, etc.).
+    Once you and your reviewer are satisfied with your solution, merge! From then on you can make changes to your solution's code in the `master` branch (refactors, etc.).
 
 ### Weekly Review
 
