@@ -7,29 +7,22 @@ data Expr
   | Mul Expr Expr
   | Div Expr Expr
 
+
 showExpr :: Expr -> String
-showExpr (Number n)
-  | n < 0     = "(" ++ show n ++ ")"
-  | otherwise = show n
-showExpr (Add a b) = parens a ++ "+" ++ parens b
-  where 
-  parens a@(Sub _ _) = "(" ++ showExpr a ++ ")"
-  parens a = showExpr a
-showExpr (Sub a b) = parens a ++ "-" ++ parens b
-  where 
-  parens a@(Add _ _) = "(" ++ showExpr a ++ ")"
-  parens a = showExpr a
-showExpr (Mul a b) = parens a ++ "*" ++ parens b
+showExpr expr = case expr of
+  Number n -> if n < 0 then "(" ++ show n ++ ")" else show n
+  Add a b  -> showExpr a ++ "+" ++ showExpr b
+  Sub a b  -> showExpr a ++ "-" ++ format b
+  Mul a b  -> format a   ++ "*" ++ format b
+  Div a b  -> format a   ++ "/" ++ parens b
   where
-  parens a@(Add _ _) = "(" ++ showExpr a ++ ")"
-  parens a@(Sub _ _) = "(" ++ showExpr a ++ ")"
-  parens a = showExpr a
-showExpr (Div a b) = parens a ++ "/" ++ parens b
-  where
-  parens a@(Add _ _) = "(" ++ showExpr a ++ ")"
-  parens a@(Sub _ _) = "(" ++ showExpr a ++ ")"
-  parens a@(Div _ _) = "(" ++ showExpr a ++ ")"
-  parens a = showExpr a
+    parens e = case e of
+      Number _ -> showExpr e
+      _        -> "(" ++ showExpr e ++ ")"
+    format e = case e of
+      Add _ _  -> "(" ++ showExpr e ++ ")"
+      Sub _ _  -> "(" ++ showExpr e ++ ")"
+      _        -> showExpr e
 
 
 evalExpr :: Expr -> Int
