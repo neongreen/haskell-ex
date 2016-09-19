@@ -391,7 +391,7 @@ You can assume that the table will be rectangular; handling any extra cases is n
 
 ## Week 4 (September 19 – September 25)
 
-### Draw a spiral `{spiral}`
+### 16. Draw a spiral `{spiral}`
 
 Given width of a spiral, draw a spiral:
 
@@ -410,7 +410,7 @@ Size? 9
 *********
 ```
 
-### Justify text `{justify}`
+### 17. Justify text `{justify}`
 
 Given a string, format it to fit N character lines and justify text inside.
 
@@ -434,7 +434,7 @@ To justify text, you can simply make some spaces double (or triple if needed, et
 
 Don't justify the last line or it'll look really ugly.
 
-### Trie `{trie}`
+### 18. Trie `{trie}`
 
 Construct a trie from all words in a dictionary and implement search for words by prefix. Here's an example of a trie for `{cool, cat, coal, bet, bean}`:
 
@@ -471,7 +471,7 @@ data Trie a = Empty | Node (Map a (Trie a))
 
 The list of words in available in the `data/` folder in the repository.
 
-### Path finding `{path}`
+### 19. Path finding `{path}`
 
 Read a grid with obstacles, a starting point, and an ending point from a file. Here's a sample grid (obstacles are denoted with `#`, starting point with `A`, ending point with `B`):
 
@@ -507,6 +507,6 @@ A+++++++..#.....#....
 
 You can use [Dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
 
-### JSON printing `{json-print}`
+### 20. JSON printing `{json-print}`
 
 Define a data type for JSON and print it as JSON (without indentation). Don't forget that you should support floating-point numbers and escaping in strings.
