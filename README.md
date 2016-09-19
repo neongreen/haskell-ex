@@ -10,19 +10,36 @@ The exercises are beginner-to-intermediate level. Expect to learn how to write a
 
 ### Submitting Solutions
 
-1. **Setup your namespace.**
-    1. Create a branch named `<exercise-code>/<your-gh-handle>`
-    2. Create a folder named `<exercise-code>/<your-gh-handle>`
-3. **Author your solution.**
+1. **Setup your namespace**
+
+  For instance, if your Github handle is **john** and you are solving task **table** from **week 3**, create a branch called `table/john` and put your solution into `week3/table/john`:
+
+  ```
+  $ git checkout -b table/john
+  $ mkdir -p week3/table/john
+  ```
+
+  Recap:
+  1. Branch `<exercise-code>/<your-gh-handle>`
+  2. Folder `week<n>/<exercise-code>/<your-gh-handle>`
+
+1. **Author your solution, get feedback**
+
     Work in your namespace. It doesn't matter what you call your `.hs` file, but `Main.hs` is a good default.
-4. **Get Feedback.**
-    Once you are ready for feedback (not necessarially done) open a pull request.
+
+    Create a pull request once you want feedback on your code and/or are ready to submit it.
+
     * _Suggestion_ If you are not done then consider writing a [task list](https://github.com/blog/1375-task-lists-in-gfm-issues-pulls-comments) in the description. This convention transparently communicates your progress.
+
     * _Suggestion_ Feedback will probably result in additional tasks to do so updating the list may be desirable, but then again certain tasks may not be worth such detail. Use judgement, whatever helps.
-5. **Iterate.**
+
+1. **Iterate**
+
     Discuss feedback with the reviewer. Integrate changes into your solution. Repeat as needed.
-5. **Finish.**
-    Once you and your reviewer are satisfied with your answer, merge! There is no formal policy on whether to use [squash](https://github.com/blog/2141-squash-your-commits) or not, but for now feel free to include all your commits (better documents your learning?).
+
+1. **Finish**
+
+    Once you and your reviewer are satisfied with your solution, merge! From then on you can make changes to your solution's code in the `master` branch (refactors, etc.).
 
 ### Weekly Review
 
