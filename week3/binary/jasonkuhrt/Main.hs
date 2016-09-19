@@ -25,6 +25,7 @@
       Each digit is referred to as a bit.
 -}
 
+import qualified Data.Char as Char
 import Test.QuickCheck ((===))
 import qualified Test.QuickCheck as QS
 
@@ -72,7 +73,7 @@ raising it to the power of the number of trailing significant
 digits.
 -}
 
-toDecimal :: Binary -> Integer
+toDecimal :: Binary -> Int
 toDecimal =
   foldl addUp 0 . zip [0..] . reverse
   where
@@ -133,8 +134,8 @@ reverse them to get the correct result:
     1010
 -}
 
-toBinary :: Integer -> Binary
-toBinary = concatMap show . reverse . go . divModHalf
+toBinary :: Int -> Binary
+toBinary = map Char.intToDigit . reverse . go . divModHalf
   where
   go (0, remainder) = [remainder]
   go (n, remainder) = remainder : go (divModHalf n)
