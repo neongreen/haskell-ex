@@ -4,20 +4,22 @@
 
 -- Spec
 
-Write a program that encrypts a file by XORing it with a key. For instance,
-if the file is “abracadabra” and the key is “XYZ”, then the result would be
+Write a program that encrypts a file by XORing it with a key. For instance:
 
      Key  "XYZ"
-    File  "abracadabra"
+Contents  "abracadabra"
      XOR   XYZXYZXYZXY
        =   9;(9:;<88*8
 
-It should accept the file name and the key as command-line arguments, and
-overwrite the file. (Due to the way XOR works, encrypting an already encrypted
-file will decrypt it.) Use bytestring to read the file, and encode the key as
-UTF8 (with encodeUtf8).
+* It should accept the file name and the key as command-line arguments
+* Use bytestring to read the file
+* Encode the key as UTF8 (with encodeUtf8)
+* Overwrite the file with encryped variant
 
-Learn more about XOR Ciphers at en.wikipedia.org/wiki/xor_cipher.
+-- Notes
+
+Due to the way XOR works, encrypting an already encrypted file will decrypt
+it. Learn more about XOR Ciphers at en.wikipedia.org/wiki/xor_cipher.
 -}
 
 module Main where
@@ -29,22 +31,37 @@ import qualified Data.ByteString.Char8 as BC8
 
 
 
-{- | Encrypt a string via XOR+key. -}
+{- | Encrypt a string via key+XOR+key. -}
 encrypt :: String -> ByteString -> ByteString
 encrypt key bs =
   B.pack (B.zipWith Bits.xor (BC8.pack cycledKey) bs)
   where
   cycledKey = take (B.length bs) (cycle key)
 
-decrypt :: String -> String -> String
-decrypt = undefined
+{- | Decrypt a string via key+XOR. -}
+decrypt :: String -> ByteString -> String
+decrypt key bs = BC8.unpack (encrypt key bs)
+
+
+
+test :: IO ()
+test = do
+  let key               = "XYZ"
+  let contents          = BC8.pack "abracadabra"
+  let encryptedExpected = BC8.pack "9;(9:;<88*8"
+  let encrypted         = encrypt key contents
+  let decrypted         = decrypt key encrypted
+  print   encrypted
+  print $ encrypted == encryptedExpected
+  print   decrypted
+  print $ decrypted == BC8.unpack contents
 
 
 
 main :: IO ()
-main = do
-  let key = "XYZ"
-  let contents = BC8.pack "abracadabra"
-  let expected = BC8.pack "9;(9:;<88*8"
-  print $ encrypt key contents
-  print $ encrypt key contents == expected
+main = undefined
+-- TODO
+-- * It should accept the file name and the key as command-line arguments
+-- * Use bytestring to read the file
+-- * Encode the key as UTF8 (with encodeUtf8)
+-- * Overwrite the file with encryped variant
