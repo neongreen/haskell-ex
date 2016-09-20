@@ -473,7 +473,7 @@ Don't justify the last line or it'll look really ugly.
 
 ### 18. Trie `{trie}`
 
-Construct a trie from all words in a dictionary and implement search for words by prefix. Here's an example of a trie for `{cool, cat, coal, bet, bean}`:
+Construct a [trie](https://en.wikipedia.org/wiki/Trie) from all words in a dictionary and implement search for words by prefix. Here's an example of a trie for `{cool, cat, coal, bet, bean}`:
 
 ```
     b       c
