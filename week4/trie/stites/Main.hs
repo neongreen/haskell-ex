@@ -1,5 +1,4 @@
 {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE RankNTypes #-}
 --------------------------------------------------------------------------------
 -- 18. Trie /{trie}/
 --
@@ -39,13 +38,11 @@
 --------------------------------------------------------------------------------
 module Main where
 
-import Data.Function
-import Data.Map.Strict (Map)
-import Data.Set (Set)
+import Control.Monad
 import Data.List
-import Debug.Trace
+import Data.Map.Strict (Map)
+import Data.Maybe
 import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 
 filepath :: FilePath
 filepath = "data/words"
@@ -53,9 +50,28 @@ filepath = "data/words"
 main :: IO ()
 main = do
   contents <- readFile filepath
-  let t = fromFileContents contents
+  let t = fromFileContents contents :: Trie Char
   putStrLn $ "Trie created. There are " ++ show (size t)  ++ " nodes."
-  return ()
+  forever $ do
+    putStr "> "
+    query <- getLine
+    putStrLn . renderQueryResults .  queryTrie t $ query
+    return ()
+
+  where
+    -- assume that the words on a file are each on separate lines
+    fromFileContents :: String -> Trie Char
+    fromFileContents = foldl' mappend mempty . fmap fromList . lines
+
+    queryTrie :: Trie Char -> String -> Maybe [String]
+    queryTrie t query = fmap (fmap (query ++) . toList) . subTrie t $ query
+
+    renderQueryResults :: Maybe [String] -> String
+    renderQueryResults = unwords . fromMaybe [""]
+
+
+------------------------------------------------------------------------
+-- Declare a Trie and useful typeclasses
 
 data Trie a
   = Empty
@@ -67,15 +83,17 @@ instance Ord a => Monoid (Trie a) where
   mempty = Empty
 
   mappend :: Trie a -> Trie a -> Trie a
-  mappend Empty Empty = Empty
   mappend Empty t = t
   mappend t Empty = t
-  mappend (Node t0) (Node t1) = Node $ M.unionWith (mappend) t0 t1
+  mappend (Node t0) (Node t1) = Node $ M.unionWith mappend t0 t1
+  mappend _ _ = Empty
 
+-- A Trie can be constructed from a list
 fromList :: Ord a => [a] -> Trie a
 fromList    []  = Empty
 fromList (a:as) = Node . M.singleton a . fromList $ as
 
+-- A Trie can be deconstructed to a list of lists
 toList :: Trie a -> [[a]]
 toList Empty = [[]]
 toList (Node m) = concat . M.elems . M.mapWithKey go $ m
@@ -83,18 +101,15 @@ toList (Node m) = concat . M.elems . M.mapWithKey go $ m
     go :: a -> Trie a -> [[a]]
     go k = fmap (k:) . toList
 
--- assume that the words are easy to work with
-fromFileContents :: String -> Trie Char
-fromFileContents = foldl' mappend mempty . fmap fromList . lines
-
+-- get the number of nodes in the trie
 size :: Trie a -> Int
 size Empty = 0
 size (Node m) = M.size m + sum (M.map size m)
 
+-- return a sub tree at some point of traversal
 subTrie :: Ord a => Trie a -> [a] -> Maybe (Trie a)
 subTrie Empty as = Nothing
 subTrie m     [] = Just m
-subTrie (Node m) (a:as) = M.lookup a m >>= (\nxt -> subTrie nxt as)
-
+subTrie (Node m) (a:as) = M.lookup a m >>= (`subTrie` as)
 
 
