@@ -51,14 +51,36 @@ At the end of each week each exercise is explained by someone who has solved it.
 
 * You can see yours (and others') progress in [this table](https://docs.google.com/spreadsheets/d/1PEF7K42M-cq1XgiAaqwf-XLeJP2wo3Dc8pU3SsD_R8s/edit?usp=sharing).
 
+## Exercises
 
+* [**Week 4 (September 19–25)**](tree/master/week4)
 
-## Current Week
-### [Week 4](https://github.com/neongreen/haskell-ex/tree/master/week4)
+    * 16. Draw a spiral `{spiral}`
+    * 17. Justify text `{justify}`
+    * 18. Trie `{trie}`
+    * 19. Path finding `{path}`
+    * 20. JSON printing `{json-print}`
 
+* [Week 3 (September 12–18)](tree/master/week3)
 
-## Past Weeks
-### [Week 1](https://github.com/neongreen/haskell-ex/tree/master/week1)
-### [Week 2](https://github.com/neongreen/haskell-ex/tree/master/week2)
-### [Week 3](https://github.com/neongreen/haskell-ex/tree/master/week3)
-### [Week 4](https://github.com/neongreen/haskell-ex/tree/master/week4)
+    * 11. Binary conversion `{binary}`
+    * 12. Working with expressions `{expr}`
+    * 13. Compute a moving average `{average}`
+    * 14. XOR encryption `{xor}`
+    * 15. Table formatting `{table}`
+
+* [Week 2 (September 5–11)](tree/master/week2)
+
+    * 6. Merge sort `{mergesort}`
+    * 7. Silly compression `{compress}`
+    * 8. Big integers `{bigint}`
+    * 9. Biased shuffle `{shuffle}`
+    * 10. JSON extractor `{jpath}`
+
+* [Week 1 (August 26 – September 4)](tree/master/week1)
+
+    * 1. Find scary words `{scary}`
+    * 2. Calculate probability of winning using simulation `{reposts}`
+    * 3. Write a tic-tac-toe game `{tictactoe}`
+    * 4. Generate a maze using Wilson's algorithm `{wilson}`
+    * 5. Solve a logic problem using brute-force `{logic-brute}`
