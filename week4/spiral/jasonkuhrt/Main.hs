@@ -8,13 +8,28 @@ Given the width of a spiral, draw a spiral. For example:
 
     > spiral 9
 
-    2 4 5 3 1
+    *********
+            *
+    ******* *
+    *     * *
+    * *** * *
+    * * * * *
+    * *   * *
+    * ***** *
+    *       *
+    *********
 
-            8
-    6     4 |
-    | 2   | |
-    | | 1 | |
-    | | | | |
+
+
+-- Problem Solving
+
+    2 4 5 3 1 <---- Step
+                       |
+            8 <- Size  |
+    6     4 |       |  |
+    | 2   | |       |  |
+    | | 1 | |       |  |
+    | | | | |       |  |
     ********* ----- 9  1
           B *
     ******* * ---- 7   3
@@ -27,50 +42,36 @@ Given the width of a spiral, draw a spiral. For example:
     ********* ----- 9  2
     A
 
+     !      A    B    C    D    E
+(11) 9,8    9,6  7,4  5,2  3,0  1,0
 
-    ********* 9*
-            *
-            *    6            7 *******
-            *    *                    *
-            *    *                    *     2       3 ***
-            *    *                    *     *           0   1*
-            *    *                    *     *
-            *    *                    4     ***** 5
-            *    *
-            8    ********* 9
+Specifically:
 
+                    - > 9 7 5 3 1 0
+                    | > 6 4 2 0 0 0
+      !
+     -9 *********
+                *    |6
+                *                -7 *******
+                *    *                    *    |2
+                *    *                    *            -3 ***
+                *    *                    *     *          |0   -1 *
+                *    *                    *     *
+                *    *                          ***** -5
+                *    *                   |4
+                     ********* -9
+               |8
 
-How do we calulate verticals?  horizontal - 3
-e.g.
+* H/V lengths shrink by 2 each step
+* V length is H - 3
+* Negative values are ignored
 
-A    B    C    D    E
-9,6  7,4  5,2  3,0  1,0
+! NOTE First loop is special case because it doesn't nest (h is smaller by 1)
 
-* NOTE First loop is special case because it doesn't nest (h is smaller by 1)
-
-in-out, per loop
-v grows by 2
-h grows by 2
-
-out-in, per loop
-v shrinks by 2
-h shrinks by 2
-
-total loops for n: div n 2 + 1    e.g. div 9 2 + 1 = 5
-                             ^ *
-V prev size      +0  +4  +6
-gap size         +1  +1  +1
-H bar size       +2  +1  +1
-              1 > 4 > 6 > 8
-
-    > spiral 4
-
-    ****
-       *
-    ** *
-    *  *
-    ****
+TODO Given the above pattern there should be a simple calculation to solve this problem...
 -}
+
+
 
 module Main where
 
@@ -87,41 +88,64 @@ main = do
 
 
 spiral :: Int -> Matrix Char
-spiral n = goRight matrix
+spiral size =
+  goRightDown (Matrix.matrix (size + 1) size (const ' '))
   where
-  matrix = Matrix.matrix (n + 1) n (const ' ')
-  goLeft m
-    | Matrix.ncols m <= 2 || Matrix.nrows m <= 2 =
-        Matrix.mapRow (\_ _ -> '*') lastRow
-      . Matrix.mapCol (\_ _ -> '*') 1
-      $ m
-    | otherwise =
-      Matrix.joinBlocks (tl, goRight tr, bl, br)
-      where
-      (tl,tr,bl,br) =
-          Matrix.splitBlocks (lastRow - 2) 2
-        . Matrix.setElem '*' (1, 2)
-        . Matrix.mapRow (\_ _ -> '*') lastRow
-        . Matrix.mapCol (\_ _ -> '*') 1
-        $ m
-      lastCol = Matrix.ncols m
-      lastRow = Matrix.nrows m
-  goRight m
-    | Matrix.ncols m <= 2 || Matrix.nrows m <= 2 =
-        Matrix.mapRow (\_ _ -> '*') 1
-      . Matrix.mapCol (\_ _ -> '*') lastCol
-      $ m
-    | otherwise =
-      Matrix.joinBlocks (tl, tr, goLeft bl, br)
-      where
-      (tl,tr,bl,br) =
-        Matrix.splitBlocks 2 (lastCol - 2)
-        . Matrix.setElem '*' (lastRow, lastCol - 1)
-        . Matrix.mapRow (\_ _ -> '*') 1
-        . Matrix.mapCol (\_ _ -> '*') lastCol
-        $ m
-      lastCol = Matrix.ncols m
-      lastRow = Matrix.nrows m
+  goLeftUp m
+    | Matrix.ncols m <= 2 = (drawLineH lr . drawLineV 1) m
+    | otherwise           = Matrix.joinBlocks (tl,(goRightDown tr),bl,br)
+    where
+    (tl,tr,bl,br) = (splitUpRight . draw) m
+    draw          = drawPoint (1, 2) . drawLineH lr . drawLineV 1
+    lc            = Matrix.ncols m
+    lr            = Matrix.nrows m
+  goRightDown m
+    | Matrix.ncols m <= 2 = (drawLineH 1  . drawLineV lc) m
+    | otherwise           = Matrix.joinBlocks (tl,tr,(goLeftUp bl),br)
+    where
+    (tl,tr,bl,br) = (splitDownLeft . draw) m
+    draw          = drawPoint (lr, lc - 1) . drawLineH 1 . drawLineV lc
+    lc            = Matrix.ncols m
+    lr            = Matrix.nrows m
+
+
+
+{- | Take the next sub-matrix for a left-curve.
+
+For example, visually:
+
+                     * * * * * | * *
+    * * * * * * *    * * * * * | * *
+    * * * * * * *    ----------|----
+    * * * * * * *    * * * * * | * *
+    * * * * * * *    * * * * * | * *
+    * * * * * * *    * * * * * | * *
+    * * * * * * *    * * * * * | * *
+
+We carve 2 away: 1 for parent line, 1 for gap
+-}
+splitDownLeft m = Matrix.splitBlocks 2 (Matrix.ncols m - 2) m
+
+{- | Take the next sub-matrix for a right-curve.
+
+For example, visually:
+
+                     * * | * * * * *
+    * * * * * * *    * * | * * * * *
+    * * * * * * *    * * | * * * * *
+    * * * * * * *    * * | * * * * *
+    * * * * * * *    ---------------
+    * * * * * * *    * * | * * * * *
+    * * * * * * *    * * | * * * * *
+
+We carve 2 away: 1 for parent line, 1 for gap
+-}
+splitUpRight m  = Matrix.splitBlocks (Matrix.nrows m - 2) 2 m
+
+-- Draw utils
+drawPoint = Matrix.setElem '*'
+drawLineH = Matrix.mapRow (\_ _ -> '*')
+drawLineV = Matrix.mapCol (\_ _ -> '*')
 
 
 
