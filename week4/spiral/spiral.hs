@@ -22,7 +22,7 @@ buildSpiral m i dir curr count | count >=3 = (setElem 1 curr m)
                          | otherwise = m
 
 available :: Matrix Int -> (Int, Int) -> Bool
-available m pos = if (m ! pos) == 1 then False else True
+available m pos = if (m ! pos) == 1 then False else True 
 
 atBound :: Direction -> (Int,Int) -> Int -> Matrix Int -> Bool
 atBound R c@(x,y) i m = (atEnd i R c) || ((distToEnd i R c) > 1 && m ! (x,y+2) == 1)
