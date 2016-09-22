@@ -114,7 +114,7 @@ A+++++++..#.....#....
 #..........###.......
 ```
 
-You can use [Dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm).
+You can use [Dijkstra's algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) or the [flood fill algorithm](https://en.wikipedia.org/wiki/Flood_fill).
 
 ### 20. JSON printing `{json-print}`
 
