@@ -83,7 +83,7 @@ import qualified Data.Matrix as Matrix
 main :: IO ()
 main = do
   putStrLn "How wide do you want the spiral to be?"
-  putStrLn . render . spiral . (read :: n -> Int) =<< getLine
+  putStrLn . render . spiral . (read :: String -> Int) =<< getLine
 
 
 
