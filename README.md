@@ -53,7 +53,7 @@ At the end of each week each exercise is explained by someone who has solved it.
 
 ## Exercises
 
-* [**Week 4 (September 19–25)**](tree/master/week4)
+* [**Week 4 (September 19–25)**](week4)
 
     * 16. Draw a spiral `{spiral}`
     * 17. Justify text `{justify}`
@@ -61,7 +61,7 @@ At the end of each week each exercise is explained by someone who has solved it.
     * 19. Path finding `{path}`
     * 20. JSON printing `{json-print}`
 
-* [Week 3 (September 12–18)](tree/master/week3)
+* [Week 3 (September 12–18)](week3)
 
     * 11. Binary conversion `{binary}`
     * 12. Working with expressions `{expr}`
@@ -69,7 +69,7 @@ At the end of each week each exercise is explained by someone who has solved it.
     * 14. XOR encryption `{xor}`
     * 15. Table formatting `{table}`
 
-* [Week 2 (September 5–11)](tree/master/week2)
+* [Week 2 (September 5–11)](week2)
 
     * 6. Merge sort `{mergesort}`
     * 7. Silly compression `{compress}`
@@ -77,7 +77,7 @@ At the end of each week each exercise is explained by someone who has solved it.
     * 9. Biased shuffle `{shuffle}`
     * 10. JSON extractor `{jpath}`
 
-* [Week 1 (August 26 – September 4)](tree/master/week1)
+* [Week 1 (August 26 – September 4)](week1)
 
     * 1. Find scary words `{scary}`
     * 2. Calculate probability of winning using simulation `{reposts}`
