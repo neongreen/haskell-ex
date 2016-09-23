@@ -1,4 +1,3 @@
-
 import qualified Data.Map.Lazy as M
 
 data Trie a = Empty | Node (M.Map a (Trie a)) deriving (Show)
@@ -6,10 +5,6 @@ data Trie a = Empty | Node (M.Map a (Trie a)) deriving (Show)
 mkTrie :: [a] -> Trie a
 mkTrie [] = Empty
 mkTrie (c:cs) = Node (M.singleton c (mkTrie cs))
-
-mergeTries :: Trie a -> Trie a -> Trie a
-mergeTries Empty t = t
-mergeTries t Empty = t
 
 addToTrie :: (Ord a) => Trie a -> [a] -> Trie a
 addToTrie t [] = t
@@ -44,4 +39,13 @@ queryTrie (Node mp) (x:xs)
         return (x : rest)
 
 main :: IO ()
-main = return ()
+main = do
+  ws <- lines <$> readFile "../../../data/words"
+  let trie = foldl addToTrie Empty ws
+  putStrLn $ "Trie created. There are " ++ show (countNodes trie) ++ " nodes."
+  loop trie
+  where
+    loop t = do
+      query <- getLine
+      putStrLn . unwords $ queryTrie t query
+      loop t
