@@ -26,6 +26,22 @@ countNodes t =
     count' (Node mp) acc = M.foldr count' (acc + M.size mp) mp
   in
     count' t 0
+    
+queryTrie :: (Ord a) => Trie a -> [a] -> [[a]]
+queryTrie Empty _ = [[]]
+queryTrie (Node mp) [] =
+  do
+    c <- M.keys mp
+    let t = M.findWithDefault Empty c mp
+    rest <- queryTrie t []
+    return $ c : rest
+queryTrie (Node mp) (x:xs)
+  | x `M.notMember` mp = []
+  | otherwise = 
+      do
+        let t = M.findWithDefault Empty x mp
+        rest <- queryTrie t xs
+        return (x : rest)
 
 main :: IO ()
 main = return ()
