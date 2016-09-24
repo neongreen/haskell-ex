@@ -7,6 +7,21 @@ Given width of a spiral, draw a spiral:
 ```
 Size? 9
 
+*********
+        *
+******* *
+*     * *
+* *** * *
+* * * * *
+* *   * *
+* ***** *
+*       *
+*********
+```
+
+You can also make the spiral look a bit nicer by adding spaces, but it's optional:
+
+```
 * * * * * * * * *
                 *
 * * * * * * *   *
