@@ -52,8 +52,11 @@ setParagraph w string
 
 
 
+-- | Find the longest string of words without exceeding width.
 nextLineLength :: Int -> String -> Int
 nextLineLength w string = case string !! w of
-  -- NOTE w is 1-based but !! is 0-based. This means we are looking w+1 ahead in the string. This is correct b/c what we are looking for is the longest w **followed by** a space.
+  -- Solution is to find the longest w trailed by a space.
+  -- Since w is 1-based but !! is 0-based, we are setup to search
+  -- the trailing character of w of string.
   ' ' -> w
   _   -> nextLineLength (w - 1) string
