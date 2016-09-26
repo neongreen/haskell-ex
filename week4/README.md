@@ -2,7 +2,7 @@
 
 ### 16. Draw a spiral `{spiral}`
 
-Given width of a spiral, draw a spiral:
+Given width of a spiral, draw a spiral (the height will be n+1):
 
 ```
 Size? 9
@@ -90,8 +90,20 @@ coal cool
 You can use the following type for the trie (but feel free to use something else):
 
 ```
-data Trie a = Empty | Node (Map a (Trie a))
+data Trie a = Empty | Node Bool (Map a (Trie a))
 ```
+
+The `Bool` parameter is needed to store words that are prefixes of other words. E.g. `{a, an, be}` will be represented like this (in pseudocode):
+
+```
+Node False {
+  'a': Node True {
+    'n': Empty }
+  'b': Node False {
+    'e': Empty } }
+```
+
+The `True` at `'a'` signals that “a” is a word in the trie; the `False` at `'b'` signals that “b” isn't a word in the tree.
 
 The list of words in available in the `data/` folder in the repository.
 
