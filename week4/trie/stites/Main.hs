@@ -38,10 +38,11 @@
 --------------------------------------------------------------------------------
 module Main where
 
-import Control.Monad
+import Control.Monad (forever)
+import Data.Monoid
 import Data.List
-import Data.Map.Strict (Map)
 import Data.Maybe
+import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 
 filepath :: FilePath
@@ -86,7 +87,6 @@ instance Ord a => Monoid (Trie a) where
   mappend Empty t = t
   mappend t Empty = t
   mappend (Node t0) (Node t1) = Node $ M.unionWith mappend t0 t1
-  mappend _ _ = Empty
 
 -- A Trie can be constructed from a list
 fromList :: Ord a => [a] -> Trie a
