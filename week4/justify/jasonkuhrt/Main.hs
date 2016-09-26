@@ -33,17 +33,30 @@ Output:
 * Bonus, handle single words that exceed a line length.
 -}
 
-
+import Data.List
 
 sample :: String
 sample = "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness..."
 
 demo :: IO ()
-demo = putStrLn $ setParagraph 65 sample
+demo = putStrLn $ (leftJustify 65 . setParagraph 65) sample
 
 
 
 type Paragraph = String
+
+leftJustify :: Int -> Paragraph -> Paragraph
+leftJustify w p = unlines ((fmap justify initLines) ++ lastLine)
+  where
+  (initLines, lastLine) = (splitAtLast . lines) p
+  justify line = case findIndex (== ' ') line of
+    Just i  -> insertAt i (replicate diff ' ') line
+    Nothing -> line
+    where
+    -- Calculate difference between desired width and actual width.
+    -- This difference is the number of spaces that need to be added.
+    diff = w - length line
+
 
 
 
@@ -79,3 +92,16 @@ closestBefore target i xs =
   if   xs !! i == target
   then i
   else closestBefore target (i - 1) xs
+
+
+
+insertAt :: Int -> [a] -> [a] -> [a]
+insertAt i new existing =
+  before ++ new ++ after
+  where
+  (before, after) = splitAt i existing
+
+
+
+splitAtLast :: [a] -> ([a],[a])
+splitAtLast xs = splitAt (length xs - 1) xs
