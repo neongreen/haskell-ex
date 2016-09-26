@@ -43,13 +43,16 @@ demo = putStrLn $ setParagraph 65 sample
 
 
 
+type Paragraph = String
+
+
 
 {- | Chunk a string into lines with the following rules:
 
 * No line exceeds given width, but may be shorter.
 * No word is broken across two lines.
 -}
-setParagraph :: Int -> String -> String
+setParagraph :: Int -> String -> Paragraph
 setParagraph w string
   -- Stop once the string is shorter than a single line.
   | w >= length string = string
@@ -59,11 +62,20 @@ setParagraph w string
 
 
 
--- | Find the longest string of words without exceeding width.
+-- | Find the longest line of whole words that do not exceed limit.
 nextLineWidth :: Int -> String -> Int
-nextLineWidth w string = case string !! w of
-  -- Solution is to find the longest w trailed by a space.
-  -- Since w is 1-based but !! is 0-based, we are setup to search
-  -- the trailing character of w of string.
-  ' ' -> w
-  _   -> nextLineWidth (w - 1) string
+nextLineWidth = closestBefore ' '
+-- Solution is to find a limit followed by a space. Since limit is
+-- 1-based but closestBefore takes an index, we are searching
+-- the trailing character of limit.
+
+
+
+-- Helpers --
+
+-- | Find elem instance closest before index.
+closestBefore :: Eq a => a -> Int -> [a] -> Int
+closestBefore target i xs =
+  if   xs !! i == target
+  then i
+  else closestBefore target (i - 1) xs
