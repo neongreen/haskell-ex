@@ -22,19 +22,24 @@ countNodes t =
   in
     count' t 0
     
+-- Shorter, cleaner version
+countNodes2 :: Trie a -> Int
+countNodes2 Empty = 0
+countNodes2 (Node mp) = M.size mp + sum(M.map countNodes2 mp)
+    
 queryTrie :: (Ord a) => Trie a -> [a] -> [[a]]
 queryTrie Empty _ = [[]]
 queryTrie (Node mp) [] =
   do
     c <- M.keys mp
-    let t = M.findWithDefault Empty c mp
+    let t = mp M.! c
     rest <- queryTrie t []
     return $ c : rest
 queryTrie (Node mp) (x:xs)
   | x `M.notMember` mp = []
   | otherwise = 
       do
-        let t = M.findWithDefault Empty x mp
+        let t = mp M.! x
         rest <- queryTrie t xs
         return (x : rest)
 
@@ -42,7 +47,7 @@ main :: IO ()
 main = do
   ws <- lines <$> readFile "../../../data/words"
   let trie = foldl addToTrie Empty ws
-  putStrLn $ "Trie created. There are " ++ show (countNodes trie) ++ " nodes."
+  putStrLn $ "Trie created. There are " ++ show (countNodes2 trie) ++ " nodes."
   loop trie
   where
     loop t = do
