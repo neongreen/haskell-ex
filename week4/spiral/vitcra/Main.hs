@@ -13,12 +13,10 @@ spiralGraph n = fst $ foldl' f (S.empty, (0,-1)) $ zip counts deltas
   where
     -- | Counts are basically the lengths of the lines of the spiral
     -- | Here's the pattern: (n: pattern)
-    -- | 9: 9 8 8 6 6 4 4 2 2
-    -- | 8: 8 7 7 5 5 3 3 1 1
-    -- | 7: 7 6 6 4 4 2 2
-    -- | 6: 6 5 5 3 3 1 1
+    -- | 9: 9 9 8 7 6 5 4 3 2 1
+    -- | 8: 8 8 7 6 5 4 3 2 1
     -- | etc
-    counts = n : concat [[n - 2*i - 1, n - 2*i - 1] | i <- [0..div n 2 - 1]]
+    counts = n : [n, n-1..1]
     -- | Go right, down, left, up and then cycle that.
     deltas = cycle [(0,1), (1, 0), (0, -1), (-1, 0)]
     -- | So zip counts deltas is like:
@@ -34,7 +32,7 @@ spiralGraph n = fst $ foldl' f (S.empty, (0,-1)) $ zip counts deltas
 -- | "Draw" the spiral Graph.
 spiral :: Int -> String
 spiral n = concatMap enfold $ zip line [1..] where
-  line = map f [(i,j) | i <- [0..n-1], j <- [0..n-1]]
+  line = map f [(i,j) | i <- [0..n], j <- [0..n-1]]
   graph = spiralGraph n
   f c = if S.member c graph then '*' else ' '
   enfold (ch, p) = [ch, if mod p n == 0 then '\n' else ' ']
