@@ -20,6 +20,16 @@ Output:
     belief, it was  the epoch of  incredulity, it  was the  season of
     Light, it was the season of Darkness...
 
+    It was the best of  times, it was the worst  of times, it was the
+    age of wisdom, it was the age of foolishness, it was the epoch of
+    belief, it  was the epoch of  incredulity, it  was the  season of
+    Light, it was the season of Darkness...
+
+    It was the best of  times, it was the worst  of times, it was the
+    age of wisdom, it was the age of foolishness, it was the epoch of
+    belief, it  was the epoch  of incredulity, it  was the  season of
+    Light, it was the season of Darkness...
+
 --- Notes
 
 * Do not hyphenate words.
@@ -39,24 +49,57 @@ sample :: String
 sample = "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness..."
 
 demo :: IO ()
-demo = putStrLn $ (leftJustify 65 . setParagraph 65) sample
+demo = putStrLn $ (justify 65 . setParagraph 65) sample
 
 
 
-type Paragraph = String
-
-leftJustify :: Int -> Paragraph -> Paragraph
-leftJustify w p = unlines ((fmap justify initLines) ++ lastLine)
+{- | TODO -}
+justify :: Int -> String -> String
+justify w p = unlines ((fmap (justifyLine w) initLines) ++ lastLine)
   where
   (initLines, lastLine) = (splitAtLast . lines) p
-  justify line = case findIndex (== ' ') line of
-    Just i  -> insertAt i (replicate diff ' ') line
-    Nothing -> line
-    where
-    -- Calculate difference between desired width and actual width.
-    -- This difference is the number of spaces that need to be added.
-    diff = w - length line
 
+
+
+{- | TODO -}
+justifyLine :: Int -> String -> String
+justifyLine w line =
+  applyIncreases base increaseIndices (0, werds)
+  -- show base
+  where
+  -- Calculate where the remaining increase will be applied
+  increaseIndices = distribute (length werds) spread
+  -- Spread gap evenly around all spaces
+  -- `base` is the increase for all spaces.
+  -- `spread` is the remaining increase to distribute to select spaces.
+  (base, spread) = divMod gap (length werds - 1)
+  werds = words line
+  gap   = w - length line
+
+
+
+{- | TODO -}
+applyIncreases :: Int -> [Int] -> (Int, [String]) -> String
+applyIncreases _    _  (_, [w])    = w
+applyIncreases base [] (_, (w:ws)) =
+    w ++ replicate (base + 1) ' ' ++ applyIncreases base [] (0, ws)
+applyIncreases base (inc:incs) (i, (w:ws))
+  | inc == i  =
+    w ++ replicate (base + 2) ' ' ++ applyIncreases base incs (succ i, ws)
+  | otherwise =
+    w ++ replicate (base + 1) ' ' ++ applyIncreases base (inc:incs) (succ i, ws)
+
+
+
+{- | TODO -}
+distribute :: Int -> Int -> [Int]
+distribute _ 0 = []
+distribute len divCount =
+  drop 1 $ scanl (\x acc -> acc + x) (-1) sizes
+  where
+  sizes = zipWith (+) (replicate divCount divSize) (padRight 0 (replicate r 1) divCount)
+  -- +1 phantom division pushes away from edge
+  (divSize, r) = divMod len (divCount + 1)
 
 
 
@@ -65,7 +108,7 @@ leftJustify w p = unlines ((fmap justify initLines) ++ lastLine)
 * No line exceeds given width, but may be shorter.
 * No word is broken across two lines.
 -}
-setParagraph :: Int -> String -> Paragraph
+setParagraph :: Int -> String -> String
 setParagraph w string
   -- Stop once the string is shorter than a single line.
   | w >= length string = string
@@ -105,3 +148,12 @@ insertAt i new existing =
 
 splitAtLast :: [a] -> ([a],[a])
 splitAtLast xs = splitAt (length xs - 1) xs
+
+
+
+padRight :: a -> [a] -> Int -> [a]
+padRight filler xs size =
+  xs ++ (fillers n)
+  where
+  fillers = flip replicate filler
+  n = size - length xs
