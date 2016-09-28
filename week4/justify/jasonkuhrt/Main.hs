@@ -128,7 +128,7 @@ splitAtNextLine :: Int -> String -> (String, String)
 splitAtNextLine w string =  go werd werds
   where
   ([werd], werds) = splitAt 1 . words $ string
-  
+
   go :: String -> [String] -> (String, String)
   go line []              = (line, "")
   go line (werd:werds)
@@ -141,27 +141,8 @@ splitAtNextLine w string =  go werd werds
 
 -- Helpers --
 
--- | Find elem instance closest before index.
-closestBefore :: Eq a => a -> Int -> [a] -> Int
-closestBefore target i xs =
-  if   xs !! i == target
-  then i
-  else closestBefore target (i - 1) xs
-
-
-
-insertAt :: Int -> [a] -> [a] -> [a]
-insertAt i new existing =
-  before ++ new ++ after
-  where
-  (before, after) = splitAt i existing
-
-
-
 splitAtLast :: [a] -> ([a],[a])
 splitAtLast xs = splitAt (length xs - 1) xs
-
-
 
 padRight :: a -> [a] -> Int -> [a]
 padRight filler xs size =
