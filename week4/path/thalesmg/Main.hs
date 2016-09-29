@@ -1,14 +1,17 @@
 import qualified Data.Map.Lazy as M
 import Data.List (sortOn)
 
--- data Direction = S | SE | E | NE | N | NW | W | SW
-
+-- |A Node is simply a pair of coordinates.
 type Node = (Int, Int)
+-- |A Path is actually a Map between a current Node and its previous one.
 type Path = M.Map Node Node
-
--- A Graph is a map from a Node to 0 or more Nodes, and the distance to them.
+-- |A Graph is a map from a Node to 0 or more Nodes, and the distance to them.
 type Graph = M.Map Node (Double, [Node])
 
+{-|
+  Gets a Graph and a current Node, and returns the list of immediately adjacent
+  nodes. This version doesn't allow diagonal movements.
+-}
 neighbors :: Graph -> Node -> [Node]
 neighbors g (x, y) =
   let
@@ -17,6 +20,10 @@ neighbors g (x, y) =
     [(x + dx, y + dy) | dx <- [-1..1], dy <- [-1..1], 
                         check (x + dx, y + dy), dx * dy == 0, dx + dy /= 0]
                         
+{-|
+  Gets a Graph and a current Node, and returns the list of immediately adjacent
+  nodes. This version permits diagonal movements.
+-}
 neighbors2 :: Graph -> Node -> [Node]
 neighbors2 g (x, y) =
   let
@@ -25,15 +32,24 @@ neighbors2 g (x, y) =
     [(x + dx, y + dy) | dx <- [-1..1], dy <- [-1..1], 
                         check (x + dx, y + dy)]
 
+-- |Helper function to read the map into a matrix of 0's and 1's
+charTo10 :: Int -> Char -> Int
+charTo10 _ char =
+  if char == '.' || char == 'A' || char == 'B'
+    then 1
+    else 0
+
+-- |Infinity.
+inf :: Double
+inf = 1/0
+
+{-|
+  Turns a string representation of a Graph/Maze and turns it into a Graph of
+  connected Nodes. This version does not allow diagonal connections.
+-}
 readGraph :: [String] -> Graph
 readGraph rows = 
   let
-    charTo10 :: Int -> Char -> Int
-    charTo10 _ char =
-      if char == '.' || char == 'A' || char == 'B'
-        then 1
-        else 0
-    inf = 1/0
     binMap = map (zipWith charTo10 [0..]) rows
     nodes = [(x, y) | (row, x) <- zip binMap [0..], (1, y) <- zip row [0..]]
     graph :: Graph
@@ -42,15 +58,13 @@ readGraph rows =
   in
     filledGraph
     
+{-|
+  Turns a string representation of a Graph/Maze and turns it into a Graph of
+  connected Nodes. This version allows diagonal connections.
+-}
 readGraph2 :: [String] -> Graph
 readGraph2 rows = 
   let
-    charTo10 :: Int -> Char -> Int
-    charTo10 _ char =
-      if char == '.' || char == 'A' || char == 'B'
-        then 1
-        else 0
-    inf = 1/0
     binMap = map (zipWith charTo10 [0..]) rows
     nodes = [(x, y) | (row, x) <- zip binMap [0..], (1, y) <- zip row [0..]]
     graph :: Graph
@@ -59,6 +73,10 @@ readGraph2 rows =
   in
     filledGraph
 
+{-|
+  Given a connected, unexplored Graph and a starting Node, 
+  attempts to find the shortest path using Dijksta's algorithm.
+-}
 dijkstra :: Graph -> Node -> Path
 dijkstra graph start =
   let
@@ -84,6 +102,10 @@ dijkstra graph start =
   in 
     go allNodes startGraph
     
+{-|
+  Given a target end Node and a map of Paths, returns the list of steps needed
+  to get from the start Node to the end Node.
+-}
 getPath :: Node -> Path -> [Node]
 getPath end paths =
   let
@@ -96,6 +118,10 @@ getPath end paths =
   in
     go end []
       
+{-|
+  Given a Path calculated by getPath and the original String map,
+  returns another String map with the path drawn into it.
+-}
 drawPath :: [Node] -> [String] -> [String]
 drawPath path rawMap =
   [[changeChar c (x, y) | (c, y) <- zip row [0..]] | (row, x) <- zip rawMap [0..]]
