@@ -93,17 +93,19 @@ You can use the following type for the trie (but feel free to use something else
 data Trie a = Empty | Node Bool (Map a (Trie a))
 ```
 
-The `Bool` parameter is needed to store words that are prefixes of other words. E.g. `{a, an, be}` will be represented like this (in pseudocode):
+The `Bool` parameter is needed to store words that are prefixes of other words. E.g. `{a, an, be, bean}` will be represented like this (in pseudocode):
 
 ```
-Node False {
-  'a': Node True {
-    'n': Empty }
-  'b': Node False {
-    'e': Empty } }
+Node False
+  a : Node True
+    n : Empty
+  b : Node False
+    e : Node True
+      a : Node False
+        n : Empty
 ```
 
-The `True` at `'a'` signals that “a” is a word in the trie; the `False` at `'b'` signals that “b” isn't a word in the tree.
+The `True` at `'a'` signals that “a” is a word in the trie; the `False` at `'b'` signals that “b” isn't a word in the tree. Likewise the `True` at `e` signals that "be" is a word.
 
 The list of words in available in the `data/` folder in the repository.
 
