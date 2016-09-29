@@ -20,16 +20,6 @@ Output:
     belief, it was  the epoch of  incredulity, it  was the  season of
     Light, it was the season of Darkness...
 
-    It was the best of  times, it was the worst  of times, it was the
-    age of wisdom, it was the age of foolishness, it was the epoch of
-    belief, it  was the epoch of  incredulity, it  was the  season of
-    Light, it was the season of Darkness...
-
-    It was the best of  times, it was the worst  of times, it was the
-    age of wisdom, it was the age of foolishness, it was the epoch of
-    belief, it  was the epoch  of incredulity, it  was the  season of
-    Light, it was the season of Darkness...
-
 --- Notes
 
 * Do not hyphenate words.
@@ -45,61 +35,89 @@ Output:
 
 import Data.List
 
-sample :: String
-sample = "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness..."
+{- | Left justify a paragraph (list of lines).
 
-longSample = replicate 66 '-' ++ " " ++ sample
+The last line is not justified. Neither is a single line.
 
-demo :: IO ()
-demo = do
-  putStrLn $ (justify 65 . setParagraph 65) sample
-  putStrLn $ (justify 65 . setParagraph 65) longSample
+@
+> justify 65 "Hello world."
 
+Hello world.
+@
 
+In the following a paragraph of 4 lines are justified. Note:
 
+  * First line stretches by two spaces
+  * Second line does not have to stretch at all
+  * Third line stretches by 4 spaces
 
-{- | TODO -}
+@
+> justify 65 "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness..."
+
+It was the best of  times, it was the worst  of times, it was the
+age of wisdom, it was the age of foolishness, it was the epoch of
+belief, it was  the epoch of  incredulity, it  was the  season of
+Light, it was the season of Darkness...
+@
+-}
 justify :: Int -> String -> String
-justify w p = unlines ((fmap (justifyLine w) initLines) ++ lastLine)
+justify width linesAll =
+  unlines (linesJustified ++ lineLast)
   where
-  (initLines, lastLine) = (splitAtLast . lines) p
+  linesJustified        = fmap (justifyLine width) linesInit
+  (linesInit, lineLast) = (splitAtLast . lines) linesAll
 
 
 
-{- | TODO -}
+{- | Justify a single line to given width.
+
+For example
+
+@
+> justifyLine 65 "belief, it was the epoch of incredulity, it was the season of"
+
+belief, it was  the epoch of  incredulity, it  was the  season of
+@
+
+Observe:
+
+@
+belief, it was the epoch of incredulity, it was the season of
+belief, it was  the epoch of  incredulity, it  was the  season of
+              \             \                \        \
+               3 (+3)        6 (+3)           8 (+2)   10 (+2)
+@
+
+  * Stretches are distributed equidistantly relative to one another and edges.
+  * Distance is measured by word count.
+-}
 justifyLine :: Int -> String -> String
-justifyLine w line =
-  applyIncreases base increaseIndices (0, werds)
-  -- show base
+justifyLine w line
+  | werdCount == 1 = line
+  | otherwise      = closeGap generalIncrease indexIncreases werds
   where
   -- Calculate where the remaining increase will be applied
-  increaseIndices = distribute (length werds) spread
-  -- Spread gap evenly around all spaces
-  -- `base` is the increase for all spaces.
-  -- `spread` is the remaining increase to distribute to select spaces.
-  (base, spread) = divMod gap (length werds - 1)
-  werds = words line
-  gap   = w - length line
+  indexIncreases = distribute residualIncrease werdCount
+  -- Evenly spread the effort to close gap across all spaces
+  -- `generalIncrease` is the increase common to all spaces.
+  -- `residualIncrease` is the remaining increase to distribute.
+  (generalIncrease, residualIncrease) = divMod gap (werdCount - 1)
+  gap       = w - length line
+  werdCount = length werds
+  werds     = words line
+
+  closeGap generalIncrease indexIncreases werds =
+    intercalate (replicate (1 + generalIncrease) ' ') .
+    fmap (\(i, werd) -> werd ++ if elem i indexIncreases then " " else "") .
+    zip [0..] $
+    werds
 
 
 
-{- | TODO -}
-applyIncreases :: Int -> [Int] -> (Int, [String]) -> String
-applyIncreases _    _  (_, [w])    = w
-applyIncreases base [] (_, (w:ws)) =
-    w ++ replicate (base + 1) ' ' ++ applyIncreases base [] (0, ws)
-applyIncreases base (inc:incs) (i, (w:ws))
-  | inc == i  =
-    w ++ replicate (base + 2) ' ' ++ applyIncreases base incs (succ i, ws)
-  | otherwise =
-    w ++ replicate (base + 1) ' ' ++ applyIncreases base (inc:incs) (succ i, ws)
-
-
-
-{- | TODO -}
+{- | Calculate n evenly spaced/sized chunks across given length. -}
 distribute :: Int -> Int -> [Int]
 distribute _ 0 = []
-distribute len divCount =
+distribute divCount len =
   drop 1 $ scanl (\x acc -> acc + x) (-1) sizes
   where
   sizes = zipWith (+) (replicate divCount divSize) (padRight 0 (replicate r 1) divCount)
@@ -150,3 +168,16 @@ padRight filler xs size =
   where
   fillers = flip replicate filler
   n = size - length xs
+
+
+
+-- Meta --
+
+sample = "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness..."
+
+sampleLong = replicate 66 '-' ++ " " ++ sample
+
+demo :: IO ()
+demo = do
+  putStrLn $ (justify 65 . setParagraph 65) sample
+  putStrLn $ (justify 65 . setParagraph 65) sampleLong
