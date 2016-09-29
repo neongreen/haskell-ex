@@ -26,28 +26,42 @@ readGraph rows =
   in
     filledGraph
 
-dijkstra :: Graph -> Node -> Graph
+dijkstra :: Graph -> Node -> Path
 dijkstra graph start =
   let
-    updateNode :: Graph -> (Int, Int) -> Double -> Graph
-    updateNode g' node distance = 
+    updateNode :: (Graph, Path) -> Node -> Node -> Double -> (Graph, Path)
+    updateNode (g', p) parent target distance = 
       if distance + 1 < oldDistance
-        then M.adjust (\(_, lst) -> (distance + 1, lst)) node g'
-        else g' 
+        then (M.adjust (\(_, lst) -> (distance + 1, lst)) target g', M.insert target parent p)
+        else (g', p) 
       where
-        oldDistance = fst $ g' M.! node
-    go [] g = g
-    go open g = 
+        oldDistance = fst $ g' M.! target
+    go :: [Node] -> (Graph, Path) -> Path
+    go [] (_, path) = path
+    go open (g, path) = 
       let
         next:rest = sortOn fst open
         (currDist, neighs) = g M.! next
-        g' = foldl (\acc n -> updateNode acc n currDist) g neighs
+        g'p = foldl (\acc n -> updateNode acc next n currDist) (g, path) neighs
       in
-        go rest g'
-    startGraph = updateNode graph start 0
-    allNodes = M.keys startGraph
+        go rest g'p
+    startGraph = updateNode (graph, M.empty) start start 0
+    allNodes = M.keys (fst startGraph)
   in 
     go allNodes startGraph
+    
+printPath :: Node -> Path -> [Node]
+printPath end path =
+  let
+    go :: Node -> [Node] -> [Node]
+    go current acc = if path M.! current == current 
+                       then current:acc
+                       else go previous (current:acc)
+                     where
+                       previous = path M.! current
+  in
+    go end []
+      
     
 neighbors :: Graph -> Node -> [Node]
 neighbors g (x, y) =
