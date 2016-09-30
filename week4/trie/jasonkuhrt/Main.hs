@@ -17,7 +17,8 @@ For example, a trie for words: cool, cat, coal, bet, bean.
 -}
 module Main where
 
-import Data.Map
+import Data.Map (Map)
+import qualified Data.Map as Map
 
 {- Trie type.
 
@@ -78,18 +79,90 @@ We could start with searching, testing it by manually constructing a very minial
 -- It contains four words: a, an, be, bean.
 sample :: Trie Char
 sample =
-  Node False (fromList [
-    ('a', Node True (fromList [
+  Node False (Map.fromList [
+    ('a', Node True (Map.fromList [
       ('n', Empty)
     ])),
-    ('b', Node False (fromList [
-      ('e', Node True (fromList [
-        ('a', Node False (fromList [
+    ('b', Node False (Map.fromList [
+      ('e', Node True (Map.fromList [
+        ('a', Node False (Map.fromList [
           ('n', Empty)
         ]))
       ]))
     ]))
   ])
+
+
+
+{- | Convert a trie into a list of words therein.
+
+For example:
+
+    trie =
+      Node False (Map.fromList [
+        ('a', Node True (Map.fromList [
+          ('n', Empty)
+        ])),
+        ('b', Node False (Map.fromList [
+          ('e', Node True (Map.fromList [
+            ('a', Node False (Map.fromList [
+              ('n', Empty)
+            ]))
+          ]))
+        ]))
+      ])
+
+    > trieToWords trie
+
+    ["a","an","be","bean"]
+-}
+trieToWords :: Trie Char -> [String]
+trieToWords Empty      = []
+trieToWords (Node _ m) = concat . Map.elems $ Map.mapWithKey (go "") m
+  where
+  go :: String -> Char -> Trie Char -> [String]
+  go prefix char Empty =
+    [prefix ++ [char]]
+  go prefix char (Node False maap) =
+    concat . Map.elems $
+    Map.mapWithKey (go (prefix ++ [char])) maap
+  go prefix char (Node True maap) =
+    ((prefix ++ [char]) :) . concat . Map.elems $
+    Map.mapWithKey (go (prefix ++ [char])) maap
+
+
+
+
+{- | Find the sub-trie matching a given prefix.
+
+The trie returned does not include the prefix given. For example given a trie with the two words "be", "bean" and a prefix of "be" then the result includes just letters "a", "n". Observe:
+
+    trie =
+      Node False (Map.fromList [
+        ('b', Node False (Map.fromList [
+          ('e', Node True (Map.fromList [
+            ('a', Node False (Map.fromList [
+              ('n', Empty)
+            ]))
+          ]))
+        ]))
+      ])
+
+    > findTrieWithPrefix "be" trie
+
+    Just (Node True (fromList [('a',Node False (fromList [('n',Empty)]))]))
+-}
+findTrieWithPrefix :: String -> Trie Char -> Maybe (Trie Char)
+findTrieWithPrefix ""        trie          = Just trie
+findTrieWithPrefix _         Empty         = Nothing
+findTrieWithPrefix (char:cs) (Node _ maap) =
+  case Map.lookup char maap of
+    Nothing    -> Nothing
+    Just trie  -> findTrieWithPrefix cs trie
+
+
+
+
 
 
 
