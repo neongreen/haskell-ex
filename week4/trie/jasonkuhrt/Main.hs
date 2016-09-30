@@ -20,6 +20,7 @@ module Main where
 import Data.Map (Map)
 import qualified Data.Map as Map
 
+
 {- Trie type.
 
 In our model it might at first seem that one word coresponds to one path within a trie of letters, but that would be wrong; Paths can actually naturally represent multiple words since words can also be the prefix of other words. For example:
@@ -162,12 +163,18 @@ findTrieWithPrefix (char:cs) (Node _ maap) =
 
 
 
+{- | Find words in given trie that have given prefix. -}
+searchIn :: Trie Char -> String -> [String]
+searchIn trie prefix = werds
+  where
+  werds = maybe [] (fmap (prefix ++) . trieToWords) maybeTrie
+  maybeTrie  = findTrieWithPrefix prefix trie
 
 
 
-
-
-
-
+{- | Search on the command line. -}
 main :: IO ()
-main = undefined
+main = do
+  putStrLn "Enter the initial letters of the word: "
+  putStr "> "
+  putStrLn . unwords . searchIn sample =<< getLine
