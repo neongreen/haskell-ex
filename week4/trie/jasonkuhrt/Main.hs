@@ -66,32 +66,36 @@ data Trie a =
   deriving (Show)
 
 
-{- TODO
-So we have two ideas to implement.
 
-  * Index a dictionary of words.
-  * Search that index for words.
+{- Index a dictionary of words. -}
+indexWords :: [String] -> Trie Char
+indexWords = foldl indexWord (Node False Map.empty)
 
-We could start with searching, testing it by manually constructing a very minial tree. This arguably has the benefit of pressuring the correct indexing solution by building an interface that uses it to achieve the high-level user-facing goal.
 
--}
 
--- Manually create a minimal word trie for testing.
--- It contains four words: a, an, be, bean.
-sample :: Trie Char
-sample =
-  Node False (Map.fromList [
-    ('a', Node True (Map.fromList [
-      ('n', Empty)
-    ])),
-    ('b', Node False (Map.fromList [
-      ('e', Node True (Map.fromList [
-        ('a', Node False (Map.fromList [
-          ('n', Empty)
-        ]))
-      ]))
-    ]))
-  ])
+indexWord :: Trie Char -> String -> Trie Char
+-- Finished indexing word
+indexWord trie      ""                  = trie
+-- Extend a trie path
+indexWord Empty     string              = stringToTrie True string
+indexWord (Node isWord maap) (char:cs)
+  -- Word path already exists
+  | Map.member char maap =
+    Node isWord (Map.update (Just . flip indexWord cs) char maap)
+  -- Word path is novel
+  | otherwise =
+    Node isWord (Map.insert char (stringToTrie False cs) maap)
+
+
+
+stringToTrie :: Bool -> String -> Trie Char
+stringToTrie _      ""     = Empty
+stringToTrie isWord (c:cs) = Node isWord (Map.singleton c (stringToTrie False cs))
+
+
+
+
+
 
 
 
@@ -178,3 +182,18 @@ main = do
   putStrLn "Enter the initial letters of the word: "
   putStr "> "
   putStrLn . unwords . searchIn sample =<< getLine
+
+sample :: Trie Char
+sample =
+  Node False (Map.fromList [
+    ('a', Node True (Map.fromList [
+      ('n', Empty)
+    ])),
+    ('b', Node False (Map.fromList [
+      ('e', Node True (Map.fromList [
+        ('a', Node False (Map.fromList [
+          ('n', Empty)
+        ]))
+      ]))
+    ]))
+  ])
