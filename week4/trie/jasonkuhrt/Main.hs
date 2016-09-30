@@ -1,3 +1,4 @@
+
 {- README
 -- Trie
 
@@ -14,6 +15,9 @@ For example, a trie for words: cool, cat, coal, bet, bean.
         |       |   |
         n       l   l
 -}
+module Main where
+
+import Data.Map
 
 {- Trie type.
 
@@ -54,8 +58,43 @@ Finally each letter (a Node) may branch out to zero, one, or many other letters 
 
 Our solution is to use a Map data type which permits us to model arbitrary number of children per node.
 -}
-
 data Trie a =
   Empty |
   Node Bool (Map a (Trie a))
   deriving (Show)
+
+
+{- TODO
+So we have two ideas to implement.
+
+  * Index a dictionary of words.
+  * Search that index for words.
+
+We could start with searching, testing it by manually constructing a very minial tree. This arguably has the benefit of pressuring the correct indexing solution by building an interface that uses it to achieve the high-level user-facing goal.
+
+-}
+
+-- Manually create a minimal word trie for testing.
+-- It contains four words: a, an, be, bean.
+sample :: Trie Char
+sample =
+  Node False (fromList [
+    ('a', Node True (fromList [
+      ('n', Empty)
+    ])),
+    ('b', Node False (fromList [
+      ('e', Node True (fromList [
+        ('a', Node False (fromList [
+          ('n', Empty)
+        ]))
+      ]))
+    ]))
+  ])
+
+
+
+
+
+
+main :: IO ()
+main = undefined
