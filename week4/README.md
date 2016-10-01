@@ -105,7 +105,7 @@ Node False
         n : Empty
 ```
 
-The `True` at `'a'` signals that “a” is a word in the trie; the `False` at `'b'` signals that “b” isn't a word in the tree. Likewise the `True` at `e` signals that "be" is a word.
+The `True` at `'a'` signals that “a” is a word in the trie; the `False` at `'b'` signals that “b” isn't a word in the tree. Likewise the `True` at `e` signals that “be” is a word.
 
 The list of words in available in the `data/` folder in the repository.
 
