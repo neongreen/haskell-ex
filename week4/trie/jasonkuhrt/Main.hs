@@ -154,8 +154,6 @@ search string = trieToWords . findTrieWithPrefix string
 
 {- | Convert a trie into a list of words therein.
 
-TODO Refactor!
-
 For example:
 
     trie =
@@ -177,18 +175,21 @@ For example:
     ["a","an","be","bean"]
 -}
 trieToWords :: Trie Char -> [String]
-trieToWords Empty      = []
-trieToWords (Node _ m) = concat . Map.elems $ Map.mapWithKey (go "") m
+trieToWords Empty       = []
+trieToWords (Node _ m') = branchesToWords (go "") m'
   where
+
+  branchesToWords f = concat. Map.elems . Map.mapWithKey f
+
   go :: String -> Char -> Trie Char -> [String]
-  go prefix char Empty =
-    [prefix ++ [char]]
-  go prefix char (Node False maap) =
-    concat . Map.elems $
-    Map.mapWithKey (go (prefix ++ [char])) maap
-  go prefix char (Node True maap) =
-    ((prefix ++ [char]) :) . concat . Map.elems $
-    Map.mapWithKey (go (prefix ++ [char])) maap
+  -- Last letter of path, must be a word :)
+  go prefix char Empty           = [prefix ++ [char]]
+  -- A letter along path, _might_ be a word too!
+  go prefix char (Node isWord m) =
+    (maybeWord ++) . branchesToWords (go prefix') $ m
+    where
+    maybeWord = if isWord then [prefix'] else []
+    prefix'   = prefix ++ [char]
 
 {- | Find the trie matching a given prefix.
 
