@@ -69,6 +69,19 @@ Specifically:
 ! NOTE First loop is special case because it doesn't nest (h is smaller by 1)
 
 TODO Given the above pattern there should be a simple calculation to solve this problem...
+
+-- Notes
+
+There are some other excellent answers to this question:
+
+  @balac
+  https://github.com/neongreen/haskell-ex/blob/master/week4/spiral/balac/Main.hs
+
+  @neongreen
+  https://github.com/neongreen/haskell-ex/blob/master/week4/spiral/neongreen/Main.hs
+
+    My analysis:
+    https://github.com/neongreen/haskell-ex/pull/16/files/28f25c41540eb94401dba8bc858fb8bfd8fce2e5#r80372219
 -}
 
 
