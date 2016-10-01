@@ -143,9 +143,9 @@ setParagraph w string
 
 -- | Find the longest line of whole words that do not exceed limit.
 splitAtNextLine :: Int -> String -> (String, String)
-splitAtNextLine w string =  go werd werds
-  where
-  ([werd], werds) = splitAt 1 . words $ string
+splitAtNextLine w string = go werd werds where
+
+  (werd:werds) = words string
 
   go :: String -> [String] -> (String, String)
   go line []              = (line, "")
