@@ -74,7 +74,7 @@ indexWords = foldl indexWord (Node False Map.empty)
 
 indexWord :: Trie Char -> String -> Trie Char
 -- Finished indexing word
-indexWord (Node _ branches)  ""         = (Node True branches)
+indexWord (Node _ branches)  ""         = Node True branches
 -- Extend a trie path
 indexWord Empty     string              = stringToTrie True string
 indexWord (Node isWord maap) (char:cs)
@@ -88,11 +88,6 @@ indexWord (Node isWord maap) (char:cs)
 stringToTrie :: Bool -> String -> Trie Char
 stringToTrie _      ""     = Empty
 stringToTrie isWord (c:cs) = Node isWord (Map.singleton c (stringToTrie False cs))
-
-
-
-
-
 
 
 
@@ -183,12 +178,20 @@ search string = trieToWords . findTrieWithPrefix string
 
 
 
-{- | Search on the command line. -}
+{- | Interactive search on the command line. -}
 main :: IO ()
 main = do
-  putStrLn "Enter the initial letters of the word: "
-  putStr "> "
-  putStrLn . unwords . flip search sample =<< getLine
+  putStr "==> Indexing dictionary... "
+  trie <- pure . indexWords .  lines =<<  readFile "/usr/share/dict/words"
+  putStrLn "Done!"
+  putStrLn "==> Now search for words by prefix."
+  prompt trie
+  where
+  prompt trie = do
+    putStr "> "
+    putStrLn . unwords . flip search trie =<< getLine
+    putStrLn ""
+    prompt trie
 
 sample :: Trie Char
 sample =
