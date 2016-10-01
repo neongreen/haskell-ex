@@ -17,6 +17,7 @@ For example, a trie for words: cool, cat, coal, bet, bean.
 -}
 module Main where
 
+import Data.Maybe (fromMaybe)
 import Data.Map (Map)
 import qualified Data.Map as Map
 
@@ -71,11 +72,9 @@ data Trie a =
 indexWords :: [String] -> Trie Char
 indexWords = foldl indexWord (Node False Map.empty)
 
-
-
 indexWord :: Trie Char -> String -> Trie Char
 -- Finished indexing word
-indexWord trie      ""                  = trie
+indexWord (Node _ branches)  ""         = (Node True branches)
 -- Extend a trie path
 indexWord Empty     string              = stringToTrie True string
 indexWord (Node isWord maap) (char:cs)
@@ -85,8 +84,6 @@ indexWord (Node isWord maap) (char:cs)
   -- Word path is novel
   | otherwise =
     Node isWord (Map.insert char (stringToTrie False cs) maap)
-
-
 
 stringToTrie :: Bool -> String -> Trie Char
 stringToTrie _      ""     = Empty
@@ -138,41 +135,51 @@ trieToWords (Node _ m) = concat . Map.elems $ Map.mapWithKey (go "") m
 
 
 
-{- | Find the sub-trie matching a given prefix.
+{- | Find the trie matching a given prefix.
 
-The trie returned does not include the prefix given. For example given a trie with the two words "be", "bean" and a prefix of "be" then the result includes just letters "a", "n". Observe:
+The trie returned does include the prefix given but all isWord flags are set to False. For example given a trie with the four words "be", "beam", "bean", "bet" and a prefix of "bea" then the result excludes "t" branch as well as unmarking "be" as a word. Observe:
 
-    trie =
-      Node False (Map.fromList [
-        ('b', Node False (Map.fromList [
-          ('e', Node True (Map.fromList [
-            ('a', Node False (Map.fromList [
-              ('n', Empty)
-            ]))
+  trie =
+    Node False (fromList [
+      ('b', Node False (fromList [
+        ('e', Node True (fromList [
+          ('t', Empty),
+          ('a', Node False (fromList [
+            ('m', Empty),
+            ('n',Empty)
           ]))
         ]))
-      ])
+      ]))
+    ])
 
-    > findTrieWithPrefix "be" trie
+    > findTrieWithPrefix "bea" trie
 
-    Just (Node True (fromList [('a',Node False (fromList [('n',Empty)]))]))
+    Node False (fromList [
+      ('b', Node False (fromList [
+        ('e', Node False (fromList [
+          ('a', Node False (fromList [
+            ('m', Empty),
+            ('n',Empty)
+          ]))
+        ]))
+      ]))
+    ])
 -}
-findTrieWithPrefix :: String -> Trie Char -> Maybe (Trie Char)
-findTrieWithPrefix ""        trie          = Just trie
-findTrieWithPrefix _         Empty         = Nothing
-findTrieWithPrefix (char:cs) (Node _ maap) =
-  case Map.lookup char maap of
-    Nothing    -> Nothing
-    Just trie  -> findTrieWithPrefix cs trie
+findTrieWithPrefix :: String -> Trie Char -> Trie Char
+findTrieWithPrefix prefix trie = fromMaybe Empty (go prefix trie)
+  where
+  go _         Empty                  = Nothing
+  go ""        node                   = Just node
+  go (char:cs) (Node _ branches) =
+    case Map.lookup char branches of
+      Nothing -> Nothing
+      Just t  -> fmap (Node False . Map.singleton char) (go cs t)
 
 
 
 {- | Find words in given trie that have given prefix. -}
-searchIn :: Trie Char -> String -> [String]
-searchIn trie prefix = werds
-  where
-  werds = maybe [] (fmap (prefix ++) . trieToWords) maybeTrie
-  maybeTrie  = findTrieWithPrefix prefix trie
+search :: String -> Trie Char -> [String]
+search string = trieToWords . findTrieWithPrefix string
 
 
 
@@ -181,7 +188,7 @@ main :: IO ()
 main = do
   putStrLn "Enter the initial letters of the word: "
   putStr "> "
-  putStrLn . unwords . searchIn sample =<< getLine
+  putStrLn . unwords . flip search sample =<< getLine
 
 sample :: Trie Char
 sample =
