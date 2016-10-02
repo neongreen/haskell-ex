@@ -31,8 +31,7 @@ nonEmptyTails = NonEmpty.fromList . List.tail . List.tails . NonEmpty.toList
 
 justify :: Int -> Text -> Text
 justify desiredLineWidth =
-  Text.unlines . List.reverse . mergeLines . List.reverse .
-    groupWords . List.map initLine . Text.words
+  Text.unlines . mergeLines . groupWords . List.map initLine . Text.words
   where
     groupWords :: [Line] -> [Line]
     groupWords = List.unfoldr (fmap @Maybe groupWords' . nonEmpty)
@@ -40,7 +39,7 @@ justify desiredLineWidth =
     groupWords' :: NonEmpty Line -> (Line, [Line])
     groupWords' lines =
       fromMaybe (NonEmpty.head groupings) $
-        listToMaybe $ List.reverse goodGroupings
+        NonEmpty.last <$> nonEmpty goodGroupings
       where
         goodGroupings = NonEmpty.takeWhile (fits . fst) groupings
         groupings =
@@ -52,10 +51,9 @@ justify desiredLineWidth =
     fits line = lineWidth line <= desiredLineWidth
 
     mergeLines :: [Line] -> [Text]
-    mergeLines []             = []
-    mergeLines (line : lines) =
-      (Text.unwords . NonEmpty.toList . lineWords) line :
-        List.map mergeLine lines
+    mergeLines []     = []
+    mergeLines [line] = [(Text.unwords . NonEmpty.toList . lineWords) line]
+    mergeLines (line : lines) = mergeLine line : mergeLines lines
 
     mergeLine :: Line -> Text
     mergeLine line =
@@ -66,8 +64,7 @@ justify desiredLineWidth =
           (desiredLineWidth - lineWidth line))
 
 concatSpaces :: [Text] -> [Int] -> Text
-concatSpaces []     _      = ""
-concatSpaces [t]    _      = t
+concatSpaces ts     []     = Text.unwords ts
 concatSpaces (t:ts) (s:ss) =
   t <> Text.replicate (s + 1) " " <> concatSpaces ts ss
 
@@ -75,25 +72,12 @@ distributeExcessSpaces
   :: Int   -- position count
   -> Int   -- excess space count
   -> [Int] -- space by positions
-distributeExcessSpaces 0         _ = []
-distributeExcessSpaces positions n =
-  List.take positions $
-    if n' > 0
-      then List.zipWith (+) quotC (bool 0 1 <$> remC)
-      else quotC
+distributeExcessSpaces positions n = List.take positions $ distrib freq n
   where
-    (q, n') = n `quotRem` positions
-    quotC   = List.repeat q
-    remC    =
-      -- distribute (n') spaces into (positions) where (n' < positions)
-      decisions (freq) n'
-      where
-        -- freq < 1
-        freq = n' % positions
-        decisions !prob !cnt
-          | prob >= 1  = True : decisions (prob - 1 + freq) (cnt - 1)
-          | otherwise  = False : decisions (prob + freq) cnt
-
+    freq = n % positions
+    distrib !prob !n' =
+      let k = floor prob :: Int
+      in k : distrib (prob + freq - fromIntegral k) (n' - k)
 
 main :: IO ()
 main = do
