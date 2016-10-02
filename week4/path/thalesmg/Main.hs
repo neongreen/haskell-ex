@@ -45,33 +45,50 @@ inf = 1/0
 
 {-|
   Turns a string representation of a Graph/Maze and turns it into a Graph of
-  connected Nodes. This version does not allow diagonal connections.
+  connected Nodes. It also returns the start and end Nodes. 
+  This version does not allow diagonal connections.
 -}
-readGraph :: [String] -> Graph
+readGraph :: [String] -> (Node,  -- ^Start node.
+                          Node,  -- ^End node.
+                          Graph) -- ^Built graph.
 readGraph rows = 
   let
     binMap = map (zipWith charTo10 [0..]) rows
+    numRows = length rows
+    numCols = length (head rows)
+    -- throws exception if the Map does not contain A!
+    startNode = head [(x, y) | (row, x) <- zip rows [0..], 
+                               ('A', y) <- zip row [0..]]
+    endNode = head [(x, y) | (row, x) <- zip rows [0..], 
+                               ('B', y) <- zip row [0..]]
     nodes = [(x, y) | (row, x) <- zip binMap [0..], (1, y) <- zip row [0..]]
     graph :: Graph
     graph = M.fromList $ zip nodes (repeat (inf, []))
     filledGraph = foldr (\node acc -> M.insert node (inf, neighbors acc node) acc) graph nodes
   in
-    filledGraph
+    (startNode, endNode, filledGraph)
     
 {-|
   Turns a string representation of a Graph/Maze and turns it into a Graph of
   connected Nodes. This version allows diagonal connections.
 -}
-readGraph2 :: [String] -> Graph
+readGraph2 :: [String] -> (Node,  -- ^Start node.
+                          Node,  -- ^End node.
+                          Graph) -- ^Built graph.
 readGraph2 rows = 
   let
     binMap = map (zipWith charTo10 [0..]) rows
+    -- throws exception if the Map does not contain A!
+    startNode = head [(x, y) | (row, x) <- zip rows [0..], 
+                               ('A', y) <- zip row [0..]]
+    endNode = head [(x, y) | (row, x) <- zip rows [0..], 
+                               ('B', y) <- zip row [0..]]
     nodes = [(x, y) | (row, x) <- zip binMap [0..], (1, y) <- zip row [0..]]
     graph :: Graph
     graph = M.fromList $ zip nodes (repeat (inf, []))
     filledGraph = foldr (\node acc -> M.insert node (inf, neighbors2 acc node) acc) graph nodes
   in
-    filledGraph
+    (startNode, endNode, filledGraph)
 
 {-|
   Given a connected, unexplored Graph and a starting Node, 
@@ -131,14 +148,12 @@ drawPath path rawMap =
 main :: IO ()
 main = do
   rawMap <- lines <$> readFile "sampleMap.txt"
-  let graph = readGraph rawMap
-      start = (0,0)
-      end = (8,12)
+  let (start, end, graph) = readGraph rawMap
       processedGraph = dijkstra graph start
       path = getPath end processedGraph
   mapM_ putStrLn $ drawPath path rawMap
   putStrLn ""
-  let graph2 = readGraph2 rawMap
+  let (start, end, graph2) = readGraph2 rawMap
       processedGraph2 = dijkstra graph2 start
       path2 = getPath end processedGraph2
   mapM_ putStrLn $ drawPath path2 rawMap
