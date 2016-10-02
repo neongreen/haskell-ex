@@ -95,7 +95,7 @@ sample =
 main :: IO ()
 main = do
   putStr "==> Indexing dictionary... "
-  trie <- pure . wordsToTrie . lines =<< readFile "/usr/share/dict/words"
+  trie <- wordsToTrie . lines <$> readFile "/usr/share/dict/words"
   putStrLn "Done!"
   putStrLn "==> Now search for words by prefix."
   prompt trie
@@ -179,7 +179,7 @@ For example:
 trieToWords :: Trie Char -> [String]
 trieToWords Empty = []
 trieToWords node  = go node where
-  -- Returning empty strings become `rest` eventually, in turn providing the 
+  -- Returning empty strings become `rest` eventually, in turn providing the
   -- two means for adding words to the list: One, always at the end of a path;
   -- Two, words embedded along the path of another words.
   go Empty           = [""]
