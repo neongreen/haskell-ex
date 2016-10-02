@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, TypeApplications, OverloadedStrings #-}
+{-# LANGUAGE LambdaCase, TypeApplications, OverloadedStrings, BangPatterns #-}
 
 module Main where
 
@@ -9,6 +9,8 @@ import Data.List as List
 import Data.List.NonEmpty as NonEmpty
 import Data.Semigroup
 import Data.Maybe
+import Data.Bool
+import Data.Ratio
 import System.Exit
 
 data Line = Line
@@ -64,10 +66,10 @@ justify desiredLineWidth =
           (desiredLineWidth - lineWidth line))
 
 concatSpaces :: [Text] -> [Int] -> Text
-concatSpaces (t:ts) (s:ss) =
-  t `mappend` Text.replicate (s + 1) " " `mappend` concatSpaces ts ss
-concatSpaces [t]    _      = t
 concatSpaces []     _      = ""
+concatSpaces [t]    _      = t
+concatSpaces (t:ts) (s:ss) =
+  t <> Text.replicate (s + 1) " " <> concatSpaces ts ss
 
 distributeExcessSpaces
   :: Int   -- position count
@@ -75,13 +77,23 @@ distributeExcessSpaces
   -> [Int] -- space by positions
 distributeExcessSpaces 0         _ = []
 distributeExcessSpaces positions n =
-  if r > 0
-    then List.zipWith (+) quotC remC
-    else quotC
+  List.take positions $
+    if n' > 0
+      then List.zipWith (+) quotC (bool 0 1 <$> remC)
+      else quotC
   where
-    (q, r) = n `quotRem` positions
-    quotC  = List.repeat q
-    remC   = List.cycle $ 1 : List.replicate (positions `quot` r) 0
+    (q, n') = n `quotRem` positions
+    quotC   = List.repeat q
+    remC    =
+      -- distribute (n') spaces into (positions) where (n' < positions)
+      decisions (freq) n'
+      where
+        -- freq < 1
+        freq = n' % positions
+        decisions !prob !cnt
+          | prob >= 1  = True : decisions (prob - 1 + freq) (cnt - 1)
+          | otherwise  = False : decisions (prob + freq) cnt
+
 
 main :: IO ()
 main = do
