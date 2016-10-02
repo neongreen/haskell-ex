@@ -72,12 +72,12 @@ distributeExcessSpaces
   :: Int   -- position count
   -> Int   -- excess space count
   -> [Int] -- space by positions
-distributeExcessSpaces positions n = List.take positions $ distrib freq n
+distributeExcessSpaces positions n = List.take positions (distrib freq)
   where
     freq = n % positions
-    distrib !prob !n' =
+    distrib !prob =
       let k = floor prob :: Int
-      in k : distrib (prob + freq - fromIntegral k) (n' - k)
+      in k : distrib (prob + freq - fromIntegral k)
 
 main :: IO ()
 main = do
