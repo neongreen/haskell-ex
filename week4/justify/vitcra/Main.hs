@@ -7,7 +7,11 @@ import           Data.List
 -- | note: this is not the best way
 -- | best way would be to use dynamic programming
 greedyLines :: Int -> String -> [[String]]
-greedyLines n str = reverse $ reverse lln : lns where
+greedyLines n str = result where
+  result = if null lln
+    then reverse lns
+    else reverse $ reverse lln : lns
+  
   -- | The accumulator is a triple where
   -- | the first component is the return value,
   -- | the second component is the "current line" which at the end of the fold
@@ -16,6 +20,7 @@ greedyLines n str = reverse $ reverse lln : lns where
   -- | To make it faster, (:) is used instead of (++),
   -- | but then we need to use reverse too (which in the end is still faster).
   (lns, lln, _) = foldl' f ([], [], 0) (words str)
+  f (ls, [], 0) w = (ls, [w], length w)
   f (ls, cs, k) w
     | n + 1 < l = ([w] : reverse cs : ls, [], 0)
     | n + 1 < nk = (reverse cs : ls, [w], l)
