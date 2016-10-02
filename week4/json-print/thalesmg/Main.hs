@@ -8,7 +8,10 @@ instance Show JSON where
   show JNull = "null"
   show (JBool b) = if b then "true" else "false"
   show (JNum x) = show x
-  show (JString s) = "\"" ++ s ++ "\""
+  show (JString s) = "\"" ++ escape s ++ "\""
+    where
+      escape =
+        foldr (\c -> (++) (if c == '\"' then "\\\"" else [c])) []
   -- show (JArray []) = "[]"
   show (JArray objs) = "[" ++ intercalate "," (map show objs) ++ "]"
   show (JObj m) = "{" ++ intercalate "," (elems m) ++ "}"
@@ -24,5 +27,5 @@ main = do
   print $ JString "hello"
   print $ JArray [JNull, JBool False, JArray []]
   print $ JObj M.empty
-  print $ JObj $ M.fromList [("field1", JNull), ("field2", JString ""),
+  print $ JObj $ M.fromList [("field1", JNull), ("field2", JString "A \" quote!"),
                               ("field3", JObj $ M.singleton "subField" (JArray [])) ]
