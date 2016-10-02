@@ -152,6 +152,8 @@ stringToTrie isWord (c:cs) = Node isWord (Map.singleton c (stringToTrie False cs
 search :: String -> Trie Char -> [String]
 search string = trieToWords . findTrieWithPrefix string
 
+
+
 {- | Convert a trie into a list of words therein.
 
 For example:
@@ -175,21 +177,17 @@ For example:
     ["a","an","be","bean"]
 -}
 trieToWords :: Trie Char -> [String]
-trieToWords Empty       = []
-trieToWords (Node _ m') = branchesToWords (go "") m'
-  where
+trieToWords Empty = []
+trieToWords node  = go node where
+  -- Returning empty strings become `rest` eventually, in turn providing the 
+  -- two means for adding words to the list: One, always at the end of a path;
+  -- Two, words embedded along the path of another words.
+  go Empty           = [""]
+  go (Node isWord m) =
+    [""       | isWord] ++
+    [c : rest | (c, trie) <- Map.toList m, rest <- go trie]
 
-  branchesToWords f = concat. Map.elems . Map.mapWithKey f
 
-  go :: String -> Char -> Trie Char -> [String]
-  -- Last letter of path, must be a word :)
-  go prefix char Empty           = [prefix ++ [char]]
-  -- A letter along path, _might_ be a word too!
-  go prefix char (Node isWord m) =
-    (maybeWord ++) . branchesToWords (go prefix') $ m
-    where
-    maybeWord = if isWord then [prefix'] else []
-    prefix'   = prefix ++ [char]
 
 {- | Find the trie matching a given prefix.
 
