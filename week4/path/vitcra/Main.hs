@@ -1,36 +1,25 @@
 {-# LANGUAGE RecordWildCards #-}
 module Main where
 
-import Data.Set (Set)
-import qualified Data.Set as S
-import Data.Array
-import Data.Map (Map)
-import qualified Data.Map as M
-import Data.List
-import Data.Maybe
-import Control.Monad
-import Data.List.Split
+import           Control.Monad
+import           Data.Array
+import           Data.List
+import           Data.List.Split
+import           Data.Map        (Map)
+import qualified Data.Map        as M
+import           Data.Maybe
+import           Data.Set        (Set)
+import qualified Data.Set        as S
 
 type Index = (Int, Int)
 
-data Infinite a = Infinity | Finite a deriving (Show)
+data Infinite a = Finite a | Infinity deriving (Show, Eq, Ord)
 
 data ProblemState = ProblemState
-  { dist :: Array Index (Infinite Int)
-  , edges :: Array Index Char
+  { dist      :: Array Index (Infinite Int)
+  , edges     :: Array Index Char
   , unvisited :: Set (Infinite Int, Index)
-  , prev :: Map Index Index } deriving (Show)
-
-instance Eq a => Eq (Infinite a) where
-  Infinity == Infinity = True
-  (Finite a) == (Finite b) = a == b
-  _ == _ = False
-
-instance Ord a => Ord (Infinite a) where
-  compare Infinity Infinity = EQ
-  compare Infinity _ = GT
-  compare _ Infinity = LT
-  compare (Finite a) (Finite b) = compare a b
+  , prev      :: Map Index Index } deriving (Show)
 
 blockerCh = '#'
 startCh = 'A'
@@ -55,15 +44,11 @@ initialize ss@(s:_) = (n, start, end, ProblemState {..}) where
   dist = listArray bnds (repeat Infinity) // [(start, Finite 0)]
   prev = M.empty
 
-
-inBounds :: Index -> (Index, Index) -> Bool
-inBounds (i,j) ((ai, aj), (bi, bj)) = i>=ai && i<=bi && j>=aj && j<=bj
-
 neighbours :: Array Index Char -> Index -> [Index]
 neighbours eds (r,c) = do
   (i, j) <- [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]
   let bnds = bounds eds
-  guard ( (i,j) `inBounds` bnds && eds ! (i,j) /= blockerCh)
+  guard ( inRange bnds (i,j) && eds ! (i,j) /= blockerCh)
   return (i, j)
 
 
@@ -92,7 +77,7 @@ go pst@ProblemState{..}
       , prev = M.union prev (M.fromList $ zip upds (repeat ci)) }
 
 tracePath :: (Index, Index) -> Map Index Index -> [Index]
-tracePath (start, end) prevs = ps where
+tracePath (start, end) prevs = if M.null prevs then [] else ps where
   ps = reverse $ helper (prevs M.! end) []
   helper i acc
     | i == start = acc
@@ -115,6 +100,11 @@ test =
   , "...#.......#B..#....."
   , ".....#..####........."
   , "#..........###......." ]
+
+test2 =
+  [ "A.."
+  , ".##"
+  , ".#B" ]
 
 main :: IO ()
 main = do
