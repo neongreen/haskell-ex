@@ -26,6 +26,7 @@ data JSON =
 
 
 
+{- | Stringify a JSON type to a valid JSON string. -}
 stringify :: JSON -> String
 
 stringify Nil        = "null"
@@ -41,9 +42,7 @@ stringify (S string) =
   $ string
 {- [1]
 
-We must ***escape escapes*** because parse unescapes escapes which would lead to invalid (or just different) strings (code) unless said escapes were also unescaped themselves.
-
-Examples of what happens _without_ escaping escapes:
+The first-level escape preserves slashes/quotes at the string level while the second-level escape preserves these escapes at the transmission level. Without escaping escapes parse would yield invalid (or just different) strings (code). For example:
 
            READ + BAD                  STRING
 IN         STRINGIFY      PARSE        RESULT
