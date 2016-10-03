@@ -53,7 +53,12 @@ At the end of each week each exercise is explained by someone who has solved it.
 
 ## Exercises
 
-* [**Week 4 (September 19 – October 2)**](week4)
+* [**Week 5 (October 3–9)**](week5)
+
+    * 21. Write a quine `{quine}`
+    * 22. Write a database engine `{db}`
+
+* [Week 4 (September 19 – October 2)](week4)
 
     * 16. Draw a spiral `{spiral}`
     * 17. Justify text `{justify}`
