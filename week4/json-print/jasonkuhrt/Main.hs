@@ -1,8 +1,3 @@
-{- TODO
-1 Escape nested quotes
-2 Escape explicit escapes
--}
-
 {- README
 
 -- Code Kata : JSON Print
@@ -38,7 +33,25 @@ stringify Nil        = "null"
 stringify (B True)   = "true"
 stringify (B False)  = "false"
 
-stringify (S string) = wrapQuotes string
+stringify (S string) =
+    wrapQuotes
+  . escape '\\' -- Otherwise parse yields invalid/different strings. [1]
+  . escape '"'  -- Otherwise it would terminate string parsing too early.
+  . escape '\\' -- Otherwise it would be an escape during parse
+  $ string
+{- [1]
+
+We must ***escape escapes*** because parse unescapes escapes which would lead to invalid (or just different) strings (code) unless said escapes were also unescaped themselves.
+
+Examples of what happens _without_ escaping escapes:
+
+           READ + BAD                  STRING
+IN         STRINGIFY      PARSE        RESULT
+-------    ----------     --------     ---------
+5\5     -> "5\\5"      -> "5\"      -> "5        (Error: Unexpected number)
+"huh"?  -> "\"huh\"?"  -> ""huh"?"  -> ""h ...   (Error: Unexpected token h)
+\foobar -> "\\foobar"  -> "\foobar" -> "\foobar" (Different: oobar vs \foobar)
+-}
 
 stringify (N number) = stringifyNumber number where
   stringifyNumber :: (Show n, Real n) => n -> String
@@ -47,17 +60,17 @@ stringify (N number) = stringifyNumber number where
     | otherwise     = show n
 
 stringify (L list)   =
-  wrap "[]" .
-  List.intercalate ", " .
-  List.map stringify $
-  list
+    wrap "[]"
+  . List.intercalate ", "
+  . List.map stringify
+  $ list
 
 stringify (O object) =
-  wrap "{}" .
-  List.intercalate ", " .
-  Map.elems .
-  Map.mapWithKey stringifyKeyValue $
-  object
+    wrap "{}"
+  . List.intercalate ", "
+  . Map.elems
+  . Map.mapWithKey stringifyKeyValue
+  $ object
   where
   stringifyKeyValue :: String -> JSON -> String
   stringifyKeyValue k v = wrapQuotes k ++ ":" ++ stringify v
@@ -74,8 +87,13 @@ wrap [end]       s = [end]   ++ s ++ [end]
 wrap [start,end] s = [start] ++ s ++ [end]
 wrap _           s = s
 
+escape :: Char -> String -> String
+escape cEscape s =
+  (\ c -> if c == cEscape then ['\\', c] else [c]) =<< s
 
 
+
+-- Test --
 
 main :: IO ()
 main = putStrLn . stringify $ sample
@@ -94,5 +112,6 @@ sample =
     ("f", L [N 1, S "bar", Nil, L [], O Map.empty]),
     ("g", S "5 \\ 5"),
     ("h", S "5 \\\\ 5"),
-    ("i", S "He said \"foo\"!")
+    ("i", S "He said \"foo\"!"),
+    ("j", S "\\foobar")
   ]
