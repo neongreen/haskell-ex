@@ -17,7 +17,7 @@ encrypt contents key = BL.pack $ zipWith xor ( BL.unpack contents ) ( cycle $ BS
 main :: IO ()
 main = do
     [inpFilename, key] <- getArgs
-    inpHandle <- openFile inpFilename ReadMode
+    inpHandle <- openBinaryFile inpFilename ReadMode
     contents <- BL.hGetContents inpHandle
     let encKey  = encodeUtf8 $ T.pack key
         encData = encrypt contents encKey
