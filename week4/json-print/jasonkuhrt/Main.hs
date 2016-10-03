@@ -91,5 +91,8 @@ sample =
     ]),
     ("d", N 2.0),
     ("e", N 2.03),
-    ("f", L [N 1, S "bar", Nil, L [], O Map.empty])
+    ("f", L [N 1, S "bar", Nil, L [], O Map.empty]),
+    ("g", S "5 \\ 5"),
+    ("h", S "5 \\\\ 5"),
+    ("i", S "He said \"foo\"!")
   ]
