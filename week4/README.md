@@ -1,4 +1,4 @@
-## Week 4 (September 19 – September 25)
+## Week 4 (September 19 – October 2)
 
 ### 16. Draw a spiral `{spiral}`
 

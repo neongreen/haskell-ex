@@ -53,7 +53,7 @@ At the end of each week each exercise is explained by someone who has solved it.
 
 ## Exercises
 
-* [**Week 4 (September 19–25)**](week4)
+* [**Week 4 (September 19 – October 2)**](week4)
 
     * 16. Draw a spiral `{spiral}`
     * 17. Justify text `{justify}`
