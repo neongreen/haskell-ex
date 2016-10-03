@@ -64,3 +64,5 @@ For **level three,** implement any of the following:
   * Add foreign keys.
 
   * Allow optional type constraints on columns. Use them to report more errors, as well as to store data more efficiently.
+
+And finally, keep in mind that having implemented this task is more important than having done it “all by yourself” – so ask questions, Google, and don't hesitate to steal others' ideas if they're good.
