@@ -1,5 +1,6 @@
 {- TODO
-* Escape quotes inside of strings
+1 Escape nested quotes
+2 Escape explicit escapes
 -}
 
 {- README
@@ -24,38 +25,42 @@ data JSON =
   | B Bool
   | S String
   | N Double
-  | O (Map String JSON)
   | L [JSON]
+  | O (Map String JSON)
   deriving (Show)
 
 
 
 stringify :: JSON -> String
+
 stringify Nil        = "null"
+
 stringify (B True)   = "true"
 stringify (B False)  = "false"
+
 stringify (S string) = wrapQuotes string
+
 stringify (N number) = stringifyNumber number where
   stringifyNumber :: (Show n, Real n) => n -> String
   stringifyNumber n
     | mod' n 1 == 0 = (takeWhile (/= '.') . show) n
     | otherwise     = show n
 
-stringify (O maap)   =
-  wrap "{}" .
-  List.intercalate ", " .
-  Map.elems .
-  Map.mapWithKey stringifyEntry $
-  maap
-  where
-  stringifyEntry :: String -> JSON -> String
-  stringifyEntry k v = wrapQuotes k ++ ":" ++ stringify v
-
-stringify (L list)    =
+stringify (L list)   =
   wrap "[]" .
   List.intercalate ", " .
   List.map stringify $
   list
+
+stringify (O object) =
+  wrap "{}" .
+  List.intercalate ", " .
+  Map.elems .
+  Map.mapWithKey stringifyKeyValue $
+  object
+  where
+  stringifyKeyValue :: String -> JSON -> String
+  stringifyKeyValue k v = wrapQuotes k ++ ":" ++ stringify v
 
 
 
