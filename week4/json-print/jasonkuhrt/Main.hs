@@ -42,7 +42,10 @@ stringify (S string) =
   $ string
 {- [1]
 
-The first-level escape preserves slashes/quotes at the string level while the second-level escape preserves these escapes at the transmission level. Without escaping escapes parse would yield invalid (or just different) strings (code). For example:
+The first-level escape preserves slashes/quotes at the string level while
+the second-level escape preserves these escapes at the transmission level.
+Without escaping escapes parse would yield invalid (or just different)
+strings (code). For example:
 
            READ + BAD                  STRING
 IN         STRINGIFY      PARSE        RESULT
