@@ -1,19 +1,15 @@
 module Main where
 
-import Data.Char (chr)
-
-sp1 = ([chr 32, chr 32, chr 32, chr 32] ++)
-sp2 = ([chr 32, chr 32, chr 44, chr 32] ++)
-h = 9
+sp1 = ("    " ++)
+sp2 = ("  , " ++)
+h = 7
 
 self = [
     "module Main where"
   , ""
-  , "import Data.Char (chr)"
-  , ""
-  , "sp1 = ([chr 32, chr 32, chr 32, chr 32] ++)"
-  , "sp2 = ([chr 32, chr 32, chr 44, chr 32] ++)"
-  , "h = 9"
+  , "sp1 = (\"    \" ++)"
+  , "sp2 = (\"  , \" ++)"
+  , "h = 7"
   , ""
   , "self = ["
   , "  ]"
