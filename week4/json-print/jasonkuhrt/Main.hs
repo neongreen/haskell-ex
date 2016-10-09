@@ -8,10 +8,12 @@ strings.
 -}
 module Main where
 
-import Data.Fixed (mod')
 import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.List as List
+import qualified Data.Char as Char
+import Text.Printf (printf)
+
 
 
 
@@ -34,37 +36,20 @@ stringify Nil        = "null"
 stringify (B True)   = "true"
 stringify (B False)  = "false"
 
-stringify (S string) =
-    wrapQuotes
-  . escape '\\' -- Otherwise parse yields invalid/different strings. [1]
-  . escape '"'  -- Otherwise it would terminate string parsing too early.
-  . escape '\\' -- Otherwise it would be an escape during parse
-  $ string
-{- [1]
-
-The first-level escape preserves slashes/quotes at the string level while
-the second-level escape preserves these escapes at the transmission level.
-Without escaping escapes parse would yield invalid (or just different)
-strings (code). For example:
-
-           READ + BAD                  STRING
-IN         STRINGIFY      PARSE        RESULT
--------    ----------     --------     ---------
-5\5     -> "5\\5"      -> "5\"      -> "5        (Error: Unexpected number)
-"huh"?  -> "\"huh\"?"  -> ""huh"?"  -> ""h ...   (Error: Unexpected token h)
-\foobar -> "\\foobar"  -> "\foobar" -> "\foobar" (Different: oobar vs \foobar)
--}
+stringify (S string) = stringifyString string
 
 stringify (N number) = stringifyNumber number where
-  stringifyNumber :: (Show n, Real n) => n -> String
+  stringifyNumber :: Double -> String
   stringifyNumber n
-    | mod' n 1 == 0 = (takeWhile (/= '.') . show) n
-    | otherwise     = show n
+    | remainder /= 0 = show n
+    | otherwise      = show integer
+    where
+    (integer, remainder) = properFraction n :: (Integer, Double)
 
 stringify (L list)   =
     wrap "[]"
   . List.intercalate ", "
-  . List.map stringify
+  . fmap stringify
   $ list
 
 stringify (O object) =
@@ -75,23 +60,42 @@ stringify (O object) =
   $ object
   where
   stringifyKeyValue :: String -> JSON -> String
-  stringifyKeyValue k v = wrapQuotes k ++ ":" ++ stringify v
+  stringifyKeyValue k v =
+    stringifyString k ++ ":" ++ stringify v
+
+
+
+-- String Handling --
+
+stringifyString :: String -> String
+stringifyString = wrap "\"" . escapeString
+
+escapeString :: String -> String
+escapeString = go where
+  go ""                = ""
+
+  go ('\\':s)          = "\\\\\\\\"                        ++ go s
+  go ('"' :s)          = "\\\\\""                          ++ go s
+
+  go ('\b' :s)         = "\\\\b"                           ++ go s
+  go ('\f' :s)         = "\\\\f"                           ++ go s
+  go ('\n' :s)         = "\\\\n"                           ++ go s
+  go ('\r' :s)         = "\\\\r"                           ++ go s
+  go ('\t' :s)         = "\\\\t"                           ++ go s
+
+  go (c   :s)
+    | Char.isControl c = (printf "\\\\u%04x" . Char.ord) c ++ go s
+
+  go (c   :s)          = c                                  : go s
 
 
 
 -- Helpers --
 
-wrapQuotes :: String -> String
-wrapQuotes = wrap "\""
-
 wrap :: String -> String -> String
 wrap [end]       s = [end]   ++ s ++ [end]
 wrap [start,end] s = [start] ++ s ++ [end]
 wrap _           s = s
-
-escape :: Char -> String -> String
-escape cEscape s =
-  (\ c -> if c == cEscape then ['\\', c] else [c]) =<< s
 
 
 
@@ -103,6 +107,7 @@ main = putStrLn . stringify $ sample
 sample :: JSON
 sample =
   O . Map.fromList $ [
+    ("1", S "\1foo\nbar\xFFFF"),
     ("a", N 1),
     ("b", N 2.2),
     ("c", O . Map.fromList $ [
