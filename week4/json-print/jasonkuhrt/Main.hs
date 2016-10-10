@@ -74,19 +74,19 @@ escapeString :: String -> String
 escapeString = go where
   go ""                = ""
 
-  go ('\\' :s)         = "\\\\\\\\"                        ++ go s
-  go ('"'  :s)         = "\\\""                            ++ go s
+  go ('\\' :s)         = "\\\\"                          ++ go s
+  go ('"'  :s)         = "\\\""                          ++ go s
 
-  go ('\b' :s)         = "\\\\b"                           ++ go s
-  go ('\f' :s)         = "\\\\f"                           ++ go s
-  go ('\n' :s)         = "\\\\n"                           ++ go s
-  go ('\r' :s)         = "\\\\r"                           ++ go s
-  go ('\t' :s)         = "\\\\t"                           ++ go s
+  go ('\b' :s)         = "\\b"                           ++ go s
+  go ('\f' :s)         = "\\f"                           ++ go s
+  go ('\n' :s)         = "\\n"                           ++ go s
+  go ('\r' :s)         = "\\r"                           ++ go s
+  go ('\t' :s)         = "\\t"                           ++ go s
 
   go (c    :s)
-    | Char.isControl c = (printf "\\\\u%04x" . Char.ord) c ++ go s
+    | Char.isControl c = (printf "\\u%04x" . Char.ord) c ++ go s
 
-  go (c    :s)         = c                                  : go s
+  go (c    :s)         = c                                : go s
 
 
 
