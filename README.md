@@ -2,7 +2,7 @@
 
 ## What is it
 
-These are exercises for the Alpha study group (if you want to participate, first get into the [Haskell Learning Group](https://github.com/haskell-learning-group/haskell-learning-group) and then ask @neongreen). You have a week to solve each set. Cheating will be punishable by spiders.
+These are exercises for the Alpha study group (if you want to participate, first get into the [Haskell Learning Group](https://github.com/haskell-learning-group/haskell-learning-group) and then ask @neongreen). A new set is published every week, but you're encouraged to solve old sets too. If you can't solve a task, ask in the Slack channel and you'll be given hints.
 
 The exercises are beginner-to-intermediate level. Expect to learn how to write algorithms, solve simple problems with Haskell, use common libraries, write sites, talk to databases, create interfaces, parse things, do weird type-level stuff, and more.
 
