@@ -53,7 +53,12 @@ At the end of each week each exercise is explained by someone who has solved it.
 
 ## Exercises
 
-* [**Week 5 (October 3–9)**](week5)
+* [**Week 6 (October 11–16)**](week6)
+
+    * 23. Write QuickCheck `{quickcheck}`
+    * 24. Choosing a serialization method `{serialize}`
+
+* [Week 5 (October 3–9)](week5)
 
     * 21. Write a quine `{quine}`
     * 22. Write a database engine `{db}`

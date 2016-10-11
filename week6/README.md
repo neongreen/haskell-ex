@@ -24,7 +24,7 @@ Once you have an initial implementation, here are ideas on how to improve it:
 
 * Handle functions with several parameters (in the same `check` function). You'll need to write another typeclass for that, `Testable`.
 
-### 24. Choosing serialization method `{serialize}`
+### 24. Choosing a serialization method `{serialize}`
 
 Let's say you've got a huge `Tree` (from `Data.Tree`) and you want to write it to a file. To do that, you first serialize it (i.e. convert to a `ByteString`). There are lots of ways to do that – you can `show` it and then convert the result to UTF-8, you can convert it to JSON with Aeson, you can use `binary` or `cereal` (or even `binary-serialise-cbor`), MessagePack, etc. Which of those is the fastest? Investigate by benchmarking various methods with [criterion](https://hackage.haskell.org/package/criterion). (It can generate nice HTML reports and you're advised to look at them – but also do include text results in comments.) You can benchmark deserialization as well, but it's not mandatory. Of course, it might turn out that different libraries are better for different trees – if your benchmarks discover that, it would be even better.
 
