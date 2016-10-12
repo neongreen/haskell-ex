@@ -29,6 +29,8 @@ import Data.Map (Map)
 data Value = Null | Number Scientific | String Text
   deriving (Eq, Ord, Show)
 
+type Row = [Value]
+
 -- | Constraints that can be put on columns.
 data Constraint = Unique | NotNull
   deriving (Eq, Ord, Show)
@@ -40,7 +42,8 @@ data Column = Column {
   deriving (Show)
 
 data Table = Table {
-  tableColumns :: [Column] }
+  tableColumns :: [Column],
+  tableRowCount :: Int }
   deriving (Show)
 
 -- | State of the database.
@@ -51,6 +54,8 @@ data Db = Db {
 data DbError
   -- | User asked to create a table with duplicate column names
   = DuplicateColumnNames
+  -- | User asked to return data from columns that aren't present
+  | ColumnsNotFound Text [Text]
   -- | Table not found
   | TableNotFound Text
   -- | Inserted row's length doesn't match number of columns (params:
@@ -60,6 +65,16 @@ data DbError
   -- violated constraint, inserted value)
   | ConstraintViolation Text Constraint Value
   deriving (Eq, Show)
+
+----------------------------------------------------------------------------
+-- Helpers
+----------------------------------------------------------------------------
+
+getTable :: Text -> Db -> Either DbError Table
+getTable tname db =
+  case M.lookup tname (dbTables db) of
+    Nothing -> Left (TableNotFound tname)
+    Just t  -> return t
 
 ----------------------------------------------------------------------------
 -- Operations
@@ -72,10 +87,10 @@ createTable_
   -> Db
   -> Either DbError Db
 createTable_ tname cols db = do
-  -- If there are any duplicate column names, we error out
+  -- Check: are there any duplicate column names?
   when (length (nub (map fst cols)) /= length (map fst cols)) $
     Left DuplicateColumnNames
-  -- Otherwise, let's define 'Column's and a 'Table'
+  -- Checks passed; let's construct the table
   let columns :: [Column]
       columns = do
         (c_name, c_constraints) <- cols
@@ -85,7 +100,8 @@ createTable_ tname cols db = do
           columnData        = mempty }
   let table :: Table
       table = Table {
-        tableColumns = columns }
+        tableColumns  = columns,
+        tableRowCount = 0 }
   -- Now that we have a table, we can add it to the database
   return Db {
     dbTables = M.insert tname table (dbTables db) }
@@ -93,17 +109,16 @@ createTable_ tname cols db = do
 -- | Insert a record into the database.
 insert_
   :: Text           -- ^ Table name
-  -> [Value]        -- ^ Row
+  -> Row            -- ^ Row
   -> Db
   -> Either DbError Db
 insert_ tname row db = do
-  -- Various checks
-  table <- case M.lookup tname (dbTables db) of
-    Nothing -> Left (TableNotFound tname)
-    Just t  -> return t
+  table <- getTable tname db
+  -- Check: is the length of the row we're inserting the same as the length
+  -- of row in the table?
   when (length row /= length (tableColumns table)) $
     Left $ RowLengthMismatch (length (tableColumns table)) (length row)
-  -- Constraint check
+  -- Check: do inserted values satisfy table constraints?
   for_ (zip (tableColumns table) row) $ \(col, v) ->
     for_ (columnConstraints col) $ \constr -> do
       let violated = case constr of
@@ -111,10 +126,35 @@ insert_ tname row db = do
             Unique  -> v /= Null && any (== v) (columnData col)
       when violated $
         Left $ ConstraintViolation tname constr v
-  -- Can insert now
+  -- Checks passed, can insert now
   let insertIntoColumn :: Column -> Value -> Column
       insertIntoColumn col v = col {columnData = columnData col |> v}
   let table' = table {
-        tableColumns = zipWith insertIntoColumn (tableColumns table) row }
+        tableColumns  = zipWith insertIntoColumn (tableColumns table) row,
+        tableRowCount = tableRowCount table + 1 }
   return Db {
     dbTables = M.insert tname table' (dbTables db) }
+
+select_
+  :: Text            -- ^ Table name
+  -> Maybe [Text]    -- ^ Column names, or 'Nothing' to return all columns
+  -> Db
+  -> Either DbError [Row]
+select_ tname mbCols db = do
+  table <- getTable tname db
+  let columns = tableColumns table
+  let tableColNames = map columnName columns
+  -- Check: from the column names that the user asked to return, are all
+  -- actually present in the table?
+  let columnsNotPresent = fromMaybe [] mbCols \\ tableColNames
+  unless (null columnsNotPresent) $
+    Left $ ColumnsNotFound tname columnsNotPresent
+  -- Checks passed, can return the rows
+  let colIndices :: [Int]
+      colIndices = case mbCols of
+        Nothing   -> [0 .. length columns - 1]
+        Just cols -> mapMaybe (`elemIndex` tableColNames) cols
+  let getRow :: Int -> Row
+      getRow i = map (\c -> (columnData (columns !! c)) `Seq.index` i)
+                     colIndices
+  return (map getRow [0 .. tableRowCount table - 1])
