@@ -1,17 +1,16 @@
 {- TODO
 
-* Distribute the testcases intelligently. Start with conservative values. Build up to exotic ones.
-
-* Shrinking
 
 * Multi-param functions
+
+* Shrinking
 
 * Count exceptions as failures too.
 -}
 
 {- README
 
--- Code Kata: Quickcheck
+-- Code Kata: Quick Check
 
 -- Spec
 
@@ -103,13 +102,9 @@ sample = replicateM 10 arbitrary
 -- Instances --
 
 instance Arbitrary Int where
-
   arbitrary = randomIO
 
-
-
 instance Arbitrary Char where
-
   arbitrary = fmap chr (randomRIO (0, ord (maxBound :: Char)))
 
 
@@ -117,5 +112,4 @@ instance Arbitrary Char where
 -- Interface --
 
 class Arbitrary a where
-
   arbitrary :: IO a
