@@ -45,5 +45,57 @@
 -}
 module Main where
 
+import System.Random
+import Data.Char (chr, ord)
+import Control.Monad
+
+
+
 main :: IO ()
-main = undefined
+main = check zeroIsZero
+
+zeroIsZero :: Int -> Bool
+zeroIsZero n = n == n + 0
+
+
+
+-- Library --
+
+{- | Check that given assertion holds for all randomly generated `a`s.
+
+  Input is an assertion; Its:
+
+    Input is polymorphic (at this level); It is the testcase supplied by `check`.
+
+    Output is a `Bool`; `False` represents a failed assertion, that is the assertion did not hold for the corresponding input (AKA testcase).
+
+  Output is printed report stating if and what testcase failed.
+-}
+check :: Arbitrary a => (a -> Bool) -> IO ()
+check f = undefined
+
+{- | Test a generator. -}
+sample :: Arbitrary a => IO [a]
+sample = replicateM 10 arbitrary
+
+
+
+-- Instances --
+
+instance Arbitrary Int where
+
+  arbitrary = randomIO
+
+
+
+instance Arbitrary Char where
+
+  arbitrary = fmap chr (randomRIO (0, ord (maxBound :: Char)))
+
+
+
+-- Interface --
+
+class Arbitrary a where
+
+  arbitrary :: IO a
