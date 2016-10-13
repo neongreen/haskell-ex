@@ -1,3 +1,14 @@
+{- TODO
+
+* Distribute the testcases intelligently. Start with conservative values. Build up to exotic ones.
+
+* Shrinking
+
+* Multi-param functions
+
+* Count exceptions as failures too.
+-}
+
 {- README
 
 -- Code Kata: Quickcheck
@@ -47,7 +58,8 @@ module Main where
 
 import System.Random
 import Data.Char (chr, ord)
-import Control.Monad
+import Control.Monad (replicateM)
+import Data.List (elemIndex)
 
 
 
@@ -71,8 +83,16 @@ zeroIsZero n = n == n + 0
 
   Output is printed report stating if and what testcase failed.
 -}
-check :: Arbitrary a => (a -> Bool) -> IO ()
-check f = undefined
+check :: (Show a, Arbitrary a) => (a -> Bool) -> IO ()
+check f = do
+  testCases <- replicateM 100 arbitrary
+  let testResults = fmap f testCases
+  case elemIndex False testResults of
+    Nothing -> putStrLn "==> PASS! 100 test cases passed."
+    Just i  -> do
+      putStrLn "==> FAIL! Invariant failed on following test case:"
+      print . (!! i) $ testCases
+
 
 {- | Test a generator. -}
 sample :: Arbitrary a => IO [a]
