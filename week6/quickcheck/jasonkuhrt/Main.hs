@@ -71,6 +71,10 @@ main = do
   foobar additionIsCommuntative
   foobar additionIsAssociative
 
+
+
+-- Invariants --
+
 zeroIsZero :: Int -> Bool
 zeroIsZero n =
   n == n + 0
@@ -83,14 +87,14 @@ additionIsAssociative :: Int -> Int -> Int -> Bool
 additionIsAssociative n o v =
   n + (o + v) == (n + o) + v
 
-foobar :: Testable f => f -> IO ()
-foobar = test >=> print
-
-
-
 
 
 -- Library --
+
+{- | TODO Work in progress -}
+foobar :: Testable f => f -> IO ()
+foobar =
+  test >=> print
 
 {- | Check that given assertion holds for all randomly generated `a`s.
 
@@ -112,10 +116,10 @@ check f = do
       putStrLn "==> FAIL! Invariant broke with the following input:"
       print . (!! i) $ testCases
 
-
 {- | Test a generator. -}
 sample :: Arbitrary a => IO [a]
-sample = replicateM 10 arbitrary
+sample =
+  replicateM 10 arbitrary
 
 
 
@@ -123,37 +127,46 @@ sample = replicateM 10 arbitrary
 
 instance Arbitrary Int
   where
-  arbitrary = randomIO
+  arbitrary =
+    randomIO
 
 instance Arbitrary Char
   where
-  arbitrary = fmap chr (randomRIO (0, ord (maxBound :: Char)))
+  arbitrary =
+    fmap chr (randomRIO (0, ord (maxBound :: Char)))
+
+
 
 instance
   (Arbitrary a) =>
   Testable (a -> Bool)
   where
-  test assertion = fmap assertion arbitrary
+  test assertion = do
+    a <- arbitrary
+    pure $ assertion a
 
 instance
   (Arbitrary a, Arbitrary b) =>
   Testable (a -> b -> Bool)
   where
-  test assertion = assertion <$> arbitrary <*> arbitrary
+  test assertion = do
+    a <- arbitrary
+    b <- arbitrary
+    pure $ assertion a b
 
 instance
   (Arbitrary a, Arbitrary b, Arbitrary c) =>
   Testable (a -> b -> c -> Bool)
   where
-  test assertion =
-        assertion
-    <$> arbitrary
-    <*> arbitrary
-    <*> arbitrary
+  test assertion = do
+    a <- arbitrary
+    b <- arbitrary
+    c <- arbitrary
+    pure $ assertion a b c
 
 
 
--- Interface --
+-- Interfaces --
 
 class Arbitrary a
   where
