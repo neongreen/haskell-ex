@@ -21,7 +21,7 @@ Benchmark the performance of different serializers serializing a large tree suit
 module Main where
 
 import Data.Tree
-import Data.Char (chr)
+import Data.Char (chr, ord)
 
 
 
@@ -72,7 +72,7 @@ expoAlphaTree :: Int -> Tree String
 expoAlphaTree count =
   unfoldTree go start
   where
-  start = 65 -- Start at 'A'
+  start = ord 'A'
   end   = start + count
   go n
     | n >= end     = ([chr n], [])
