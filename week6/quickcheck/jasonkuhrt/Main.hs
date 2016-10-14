@@ -59,7 +59,7 @@ module Main where
 
 import System.Random
 import Data.Char (chr, ord)
-import Control.Monad (replicateM)
+import Control.Monad (replicateM, (>=>))
 import Data.List (elemIndex)
 
 
@@ -84,9 +84,7 @@ additionIsAssociative n o v =
   n + (o + v) == (n + o) + v
 
 foobar :: Testable f => f -> IO ()
-foobar f = do
-  testResult <- test f
-  print testResult
+foobar = test >=> print
 
 
 
