@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 {- TODO
 
 
@@ -63,10 +65,30 @@ import Data.List (elemIndex)
 
 
 main :: IO ()
-main = check zeroIsZero
+main = do
+  check zeroIsZero
+  foobar zeroIsZero
+  foobar additionIsCommuntative
+  foobar additionIsAssociative
 
 zeroIsZero :: Int -> Bool
-zeroIsZero n = n == n + 0
+zeroIsZero n =
+  n == n + 0
+
+additionIsCommuntative :: Int -> Int -> Bool
+additionIsCommuntative n o =
+  n + o == o + n
+
+additionIsAssociative :: Int -> Int -> Int -> Bool
+additionIsAssociative n o v =
+  n + (o + v) == (n + o) + v
+
+foobar :: Testable f => f -> IO ()
+foobar f = do
+  testResult <- test f
+  print testResult
+
+
 
 
 
@@ -89,7 +111,7 @@ check f = do
   case elemIndex False testResults of
     Nothing -> putStrLn "==> PASS! 100 test cases passed."
     Just i  -> do
-      putStrLn "==> FAIL! Invariant failed on following test case:"
+      putStrLn "==> FAIL! Invariant broke with the following input:"
       print . (!! i) $ testCases
 
 
@@ -101,15 +123,44 @@ sample = replicateM 10 arbitrary
 
 -- Instances --
 
-instance Arbitrary Int where
+instance Arbitrary Int
+  where
   arbitrary = randomIO
 
-instance Arbitrary Char where
+instance Arbitrary Char
+  where
   arbitrary = fmap chr (randomRIO (0, ord (maxBound :: Char)))
+
+instance
+  (Arbitrary a) =>
+  Testable (a -> Bool)
+  where
+  test assertion = fmap assertion arbitrary
+
+instance
+  (Arbitrary a, Arbitrary b) =>
+  Testable (a -> b -> Bool)
+  where
+  test assertion = assertion <$> arbitrary <*> arbitrary
+
+instance
+  (Arbitrary a, Arbitrary b, Arbitrary c) =>
+  Testable (a -> b -> c -> Bool)
+  where
+  test assertion =
+        assertion
+    <$> arbitrary
+    <*> arbitrary
+    <*> arbitrary
 
 
 
 -- Interface --
 
-class Arbitrary a where
+class Arbitrary a
+  where
   arbitrary :: IO a
+
+class Testable f
+  where
+  test :: f -> IO Bool
