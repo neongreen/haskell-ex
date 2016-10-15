@@ -21,12 +21,21 @@ Benchmark the performance of different serializers serializing a large tree suit
 module Main where
 
 import Data.Tree
+import Criterion.Main
 import Data.Char (chr, ord)
+import Data.ByteString.UTF8
 
 
+
+bigTree = expoAlphaTree 15
 
 main :: IO ()
-main = putStrLn . drawTree $ expoAlphaTree 3
+main = defaultMain [
+    bgroup "show+UTF8" [
+       bench "expoAlphaTree (^15)" $ nf (fromString . show) bigTree
+    ]
+  ]
+
 
 
 {- An exponential alphabet tree.
@@ -70,10 +79,16 @@ For example given a `count` of 3:
 -}
 expoAlphaTree :: Int -> Tree String
 expoAlphaTree count =
-  unfoldTree go start
+  unfoldTree go 'A'
   where
-  start = ord 'A'
-  end   = start + count
-  go n
-    | n >= end     = ([chr n], [])
-    | otherwise    = ([chr n], replicate 2 (n + 1))
+  end = chr (ord 'A' + (count - 1))
+  go letter
+    | letter >= end = ([letter], [])
+    | otherwise     = ([letter], replicate 2 (succ letter))
+
+
+
+-- Development --
+
+demoTree :: Int -> IO ()
+demoTree = putStrLn . drawTree . expoAlphaTree
