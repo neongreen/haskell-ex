@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeFamilies, AllowAmbiguousTypes, FlexibleContexts #-}
 
 {- TODO
 
@@ -92,9 +92,12 @@ additionIsAssociative n o v =
 -- Library --
 
 {- | TODO Work in progress -}
-foobar :: Testable f => f -> IO ()
-foobar =
-  test >=> print
+foobar :: (Show (TestCase f), Testable f) => f -> IO ()
+foobar invariant = do
+  result <- test invariant
+  case result of
+    Nothing   -> print "OK"
+    Just args -> print args
 
 {- | Check that given assertion holds for all randomly generated `a`s.
 
@@ -137,32 +140,37 @@ instance Arbitrary Char
 
 
 
-instance
-  (Arbitrary a) =>
-  Testable (a -> Bool)
-  where
-  test assertion = do
-    a <- arbitrary
-    pure $ assertion a
+instance (Show a, Arbitrary a) =>
+  Testable (a -> Bool) where
 
-instance
-  (Arbitrary a, Arbitrary b) =>
-  Testable (a -> b -> Bool)
-  where
+  type TestCase (a -> Bool) = a
+
+  test assertion = do
+    arg <- arbitrary
+    pure $ if assertion arg then Nothing else Just arg
+
+
+instance (Show a, Show b, Arbitrary a, Arbitrary b) =>
+  Testable (a -> b -> Bool) where
+
+  type TestCase (a -> b -> Bool) = (a,b)
+
   test assertion = do
     a <- arbitrary
     b <- arbitrary
-    pure $ assertion a b
+    pure $ if assertion a b then Nothing else Just (a,b)
 
-instance
-  (Arbitrary a, Arbitrary b, Arbitrary c) =>
-  Testable (a -> b -> c -> Bool)
-  where
+
+instance (Show a, Show b, Show c, Arbitrary a, Arbitrary b, Arbitrary c) =>
+  Testable (a -> b -> c -> Bool) where
+
+  type TestCase (a -> b -> c -> Bool) = (a,b,c)
+
   test assertion = do
     a <- arbitrary
     b <- arbitrary
     c <- arbitrary
-    pure $ assertion a b c
+    pure $ if assertion a b c then Nothing else Just (a,b,c)
 
 
 
@@ -172,6 +180,6 @@ class Arbitrary a
   where
   arbitrary :: IO a
 
-class Testable f
-  where
-  test :: f -> IO Bool
+class Testable a where
+  type TestCase a
+  test :: a -> IO (Maybe (TestCase a))
