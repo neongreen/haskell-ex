@@ -2,9 +2,6 @@
 
 {- TODO
 
-
-* Multi-param functions
-
 * Shrinking
 
 * Count exceptions as failures too.
@@ -35,10 +32,6 @@
   False! Testcase: (5,3)
   ```
 
--- Hints
-
-* A custom typeclass for generating random test cases for various types
-
 -- Bonus
 
 * Upgrade `check` to support multi-parameter functions. Hint: Another custom typeclass will be required (e.g. `Testable`).
@@ -68,9 +61,8 @@ import Data.List (elemIndex)
 main :: IO ()
 main = do
   check zeroIsZero
-  foobar zeroIsZero
-  foobar additionIsCommuntative
-  foobar additionIsAssociative
+  check additionIsCommuntative
+  check additionIsAssociative
 
 
 
@@ -92,9 +84,18 @@ additionIsAssociative n o v =
 
 -- Library --
 
-{- | TODO Work in progress -}
-foobar :: (Show (TestCase f), Testable f) => f -> IO ()
-foobar invariant = do
+{- | Check that given invariant holds for 100 generated test cases.
+
+  Input is an assertion; Its:
+
+    Input is polymorphic (at this level); It is the testcase supplied by `check`.
+
+    Output is a `Bool`; `False` represents a failed assertion, that is the assertion did not hold for the corresponding input (AKA testcase).
+
+  Output is a printed report stating if and what testcase failed.
+-}
+check :: (Show (TestCase f), Testable f) => f -> IO ()
+check invariant = do
   results <- replicateM 100 (test invariant)
   case filter Either.isLeft results of
     []          ->
@@ -103,25 +104,6 @@ foobar invariant = do
       putStrLn "==> FAIL! Invariant broke with the following input:"
       print failure
 
-{- | Check that given assertion holds for all randomly generated `a`s.
-
-  Input is an assertion; Its:
-
-    Input is polymorphic (at this level); It is the testcase supplied by `check`.
-
-    Output is a `Bool`; `False` represents a failed assertion, that is the assertion did not hold for the corresponding input (AKA testcase).
-
-  Output is printed report stating if and what testcase failed.
--}
-check :: (Show a, Arbitrary a) => (a -> Bool) -> IO ()
-check f = do
-  testCases <- replicateM 100 arbitrary
-  let testResults = fmap f testCases
-  case elemIndex False testResults of
-    Nothing -> putStrLn "==> PASS! 100 test cases passed."
-    Just i  -> do
-      putStrLn "==> FAIL! Invariant broke with the following input:"
-      print . (!! i) $ testCases
 
 {- | Test a generator. -}
 sample :: Arbitrary a => IO [a]
