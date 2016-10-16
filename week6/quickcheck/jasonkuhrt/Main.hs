@@ -58,6 +58,7 @@
 module Main where
 
 import System.Random
+import qualified Data.Either as Either
 import Data.Char (chr, ord)
 import Control.Monad (replicateM, (>=>))
 import Data.List (elemIndex)
@@ -94,10 +95,13 @@ additionIsAssociative n o v =
 {- | TODO Work in progress -}
 foobar :: (Show (TestCase f), Testable f) => f -> IO ()
 foobar invariant = do
-  result <- test invariant
-  case result of
-    Nothing   -> print "OK"
-    Just args -> print args
+  results <- replicateM 100 (test invariant)
+  case filter Either.isLeft results of
+    []          ->
+      putStrLn "==> PASS! 100 test cases passed."
+    (failure:_) -> do
+      putStrLn "==> FAIL! Invariant broke with the following input:"
+      print failure
 
 {- | Check that given assertion holds for all randomly generated `a`s.
 
@@ -146,8 +150,8 @@ instance (Show a, Arbitrary a) =>
   type TestCase (a -> Bool) = a
 
   test assertion = do
-    arg <- arbitrary
-    pure $ if assertion arg then Nothing else Just arg
+    a <- arbitrary
+    pure $ if assertion a then Right a else Left a
 
 
 instance (Show a, Show b, Arbitrary a, Arbitrary b) =>
@@ -158,7 +162,7 @@ instance (Show a, Show b, Arbitrary a, Arbitrary b) =>
   test assertion = do
     a <- arbitrary
     b <- arbitrary
-    pure $ if assertion a b then Nothing else Just (a,b)
+    pure $ if assertion a b then Right (a,b) else Left (a,b)
 
 
 instance (Show a, Show b, Show c, Arbitrary a, Arbitrary b, Arbitrary c) =>
@@ -170,7 +174,7 @@ instance (Show a, Show b, Show c, Arbitrary a, Arbitrary b, Arbitrary c) =>
     a <- arbitrary
     b <- arbitrary
     c <- arbitrary
-    pure $ if assertion a b c then Nothing else Just (a,b,c)
+    pure $ if assertion a b c then Right (a,b,c) else Left (a,b,c)
 
 
 
@@ -182,4 +186,4 @@ class Arbitrary a
 
 class Testable a where
   type TestCase a
-  test :: a -> IO (Maybe (TestCase a))
+  test :: a -> IO (Either (TestCase a) (TestCase a))
