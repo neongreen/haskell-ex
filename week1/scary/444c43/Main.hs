@@ -5,7 +5,9 @@ import Data.List
 
 sumString :: String -> Int
 sumString []     = 0
-sumString (x:xs) = fromEnum (toLower x) + sumString xs
+sumString (x:xs) =
+  let offset = fromEnum (toLower x) - 96
+  in offset + sumString xs
 
 sumList :: [String] -> Int
 sumList []     = 0
