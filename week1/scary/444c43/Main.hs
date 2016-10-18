@@ -2,16 +2,16 @@ import System.IO
 import Data.Char
 import Data.List
 
-
 sumString :: String -> Int
-sumString []     = 0
-sumString (x:xs) =
-  let offset = fromEnum (toLower x) - 96
-  in offset + sumString xs
+sumString []                    = 0
+sumString (x:xs)
+  | (x `elem` letters) == True  = (fromEnum (toLower x) - offset) + sumString xs
+  | (x `elem` letters) == False = 0 + sumString xs
+  where letters = ['a'..'z'] ++ ['A'..'Z']
+        offset  = 96
 
-sumList :: [String] -> Int
-sumList []     = 0
-sumList (x:xs) = sumString x + sumList xs
+sumList :: [String] -> [String]
+sumList xs = [ x | x <- xs, sumString x == 13]
 
 main = do
   contents <- readFile "/usr/share/dict/words"
