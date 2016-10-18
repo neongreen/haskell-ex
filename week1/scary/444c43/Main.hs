@@ -1,7 +1,16 @@
 import System.IO
+import Data.Char
+import Data.List
+
+
+sumString :: String -> Int
+sumString []     = 0
+sumString (x:xs) = fromEnum (toLower x) + sumString xs
+
+sumList :: [String] -> Int
+sumList []     = 0
+sumList (x:xs) = sumString x + sumList xs
 
 main = do
-  handle   <- openFile "/usr/share/dict/words" ReadMode
-  contents <- hGetContents handle
-  putStr contents
-  hClose handle
+  contents <- readFile "/usr/share/dict/words"
+  print . sumList . lines $ contents
