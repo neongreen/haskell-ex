@@ -3,6 +3,7 @@ import Control.Monad.State
 
 nPrizes = 7
 totalReposts = 1000000
+nSims = 10000
 
 simulate :: Int -> Int -> State StdGen [Int]
 simulate n tr =
@@ -26,7 +27,8 @@ calcProb sims nps = (fromIntegral . length . filter (<= nps)) sims / (fromIntegr
 main :: IO ()
 main = do
   g <- getStdGen
-  let lst = evalState (simulate 10000 totalReposts) g
-      prob = calcProb lst nPrizes
-  print lst
-  print prob
+  let sim nSister = evalState (simulate nSims (totalReposts + nSister)) g
+      extras = [10, 100, 1000]
+      lists = map sim extras
+      probs = map (\ls -> calcProb ls nPrizes) lists
+  putStrLn . show $ zip extras probs
