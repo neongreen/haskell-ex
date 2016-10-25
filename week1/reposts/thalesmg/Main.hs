@@ -16,7 +16,7 @@ simulate n tr =
     sims
 
 calcProb :: [Int] -> Int -> Double
-calcProb sims nps = (fromIntegral . length . filter (<= nps)) sims / (fromIntegral . length $ sims)
+calcProb sims nSisterPosts = (fromIntegral . length . filter (<= nSisterPosts)) sims / (fromIntegral . length $ sims)
 
 -- loto :: State StdGen Int
 -- loto = state $ randomR (1, 10)
@@ -30,5 +30,5 @@ main = do
   let sim nSister = evalState (simulate nSims (totalReposts + nSister)) g
       extras = [10, 100, 1000]
       lists = map sim extras
-      probs = map (\ls -> calcProb ls nPrizes) lists
+      probs = map (\(ls, nSis) -> calcProb ls nSis) (zip lists extras)
   putStrLn . show $ zip extras probs
