@@ -30,5 +30,7 @@ main = do
   let sim nSister = evalState (simulate nSims (totalReposts + nSister)) g
       extras = [10, 100, 1000]
       lists = map sim extras
-      probs = map (\(ls, nSis) -> calcProb ls nSis) (zip lists extras)
-  putStrLn . show $ zip extras probs
+      probs = zipWith calcProb lists extras
+  -- putStrLn . show $ zip extras probs
+  mapM_ (\(sis, prob) -> putStrLn $ "With " ++ show sis ++ " reposts, the probability "
+         ++ "is " ++ show prob) (zip extras probs)
