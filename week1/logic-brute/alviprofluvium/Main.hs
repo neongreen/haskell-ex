@@ -26,13 +26,18 @@ fact1 (a, b) = (not . unique . pWorlds) (a*b)
 
 -- S: I knew you didn't know. I don't know either.
 fact2 :: World -> Bool
-fact2 (a, b) = notUnique (a+b) && notUnique (a*b)
-  where
-    notUnique = not . unique . sWorlds
+fact2 (a, b) = (not . unique . sWorlds) (a+b) && all fact1 (sWorlds (a+b))
 
 -- P: Now I know the numbers
 fact3 :: World -> Bool
-fact3 (a, b) = undefined
+fact3 (a, b) = unique . filter fact2 $ pWorlds (a*b)
 
 -- S: Now I know them too.
-fact4 = undefined
+fact4 :: World -> Bool
+fact4 (a, b) = unique . filter fact3 $ sWorlds (a+b)
+
+solutions :: [World]
+solutions = filter (\x -> all ($x) [fact1, fact2, fact3, fact4]) pairs
+
+main :: IO ()
+main = print solutions
