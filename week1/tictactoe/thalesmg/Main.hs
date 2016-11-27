@@ -1,7 +1,9 @@
 import qualified Data.Array as A
 import           Data.Array (Array)
 import           Data.Maybe (maybe, isJust, mapMaybe, catMaybes)
-import qualified System.Console.ANSI as T
+import           Data.Foldable (toList)
+import           Control.Monad (sequence_)
+import           System.Console.ANSI
 
 data Move = O | X deriving (Show, Eq, Ord)
 type Pos = (Int, Int)
@@ -47,30 +49,47 @@ posToCoord :: Pos -> (Int, Int)
 posToCoord (x, y) =
   let
     step = 2
-    (x0, y0) = (2, 5)
-    x' = (x - x0) * step
-    y' = (y - y0) * step
+    (x0, y0) = (1, 1)
+    (h0, w0) = (3, 6)
+    x' = (x - x0) * step + h0
+    y' = (y - y0) * step + w0
   in
     (x', y')
 
 blankDiagram :: [String]
 blankDiagram =
-  ["     A B C",
-   "    ┏━┯━┯━┓",
-   "   1┃ │ │ ┃",
-   "    ┠─┼─┼─┨",
-   "   2┃ │ │ ┃",
-   "    ┠─┼─┼─┨",
-   "   3┃ │ │ ┃",
-   "    ┗━┷━┷━┛"]
+  ["     A B C \n",
+   "    ┏━┯━┯━┓\n",
+   "   1┃ │ │ ┃\n",
+   "    ┠─┼─┼─┨\n",
+   "   2┃ │ │ ┃\n",
+   "    ┠─┼─┼─┨\n",
+   "   3┃ │ │ ┃\n",
+   "    ┗━┷━┷━┛\n"]
 
 printBoard :: Board -> IO ()
 printBoard b =
   let
+    (h, w) = (length blankDiagram, length (blankDiagram !! 0))
+    aDiagram :: Array (Int, Int) Char
+    aDiagram = A.listArray ((1, 1), (h, w)) (concat blankDiagram)
+--    game = A.assocs b
     justMoves = filter (isJust . snd) (A.assocs b)
     moves = zip (fst <$> justMoves) (catMaybes $ snd <$> justMoves)
+    lstPrnts :: [[IO ()]]
+    lstPrnts = map (map putChar) blankDiagram
+    aPrnts = A.listArray ((1, 1), (h, w)) (concat lstPrnts)
+    -- Substitute the Xs and Os with colored versions
+    colorize :: Move -> IO ()
+    colorize m = do
+      let color = if m == X then Green else Red
+      setSGR [SetColor Foreground Vivid color]
+      putStr . show $ m
+      setSGR [Reset]
+    substitutions = map (\(p, m) -> (posToCoord p, colorize m)) moves
+    aPrnts' = aPrnts A.// substitutions
   in
-    return ()
+    sequence_ (toList aPrnts')
 
 
 main :: IO ()
