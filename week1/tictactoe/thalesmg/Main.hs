@@ -18,16 +18,19 @@ instance Show Move where
   show Computer = "O"
   show Human    = "X"
 type Pos = (Int, Int)
+-- |Nothing denotes a blank position.
 type Board = Array Pos (Maybe Move)
 data Status = Ongoing | Draw | Won Move deriving (Show, Eq, Ord)
 data WrongMove = PositionTaken Pos
                | GameOver Status Board
                deriving (Show, Eq, Ord)
-numSims = 800
+-- |Number of simulations to determine the computer moves.
+numSims = 803
 
 blankBoard :: Board
 blankBoard = A.listArray ((1, 1), (3, 3)) (repeat Nothing)
 
+-- |Inserts a move in the board. It can signal whether the move is invalid or the game is over.
 makeMove :: Move -> Pos -> Board -> Either WrongMove Board
 makeMove m p b
   | taken = Left (PositionTaken p)
@@ -46,7 +49,9 @@ checkBoard b m (x,y) =
   let
     ((minx, _), (maxx, _)) = A.bounds b
     size = maxx - minx + 1
+    -- Number of horizontal points
     countH = length [m | ((_, w), Just move) <- A.assocs b, move == m, w == y]
+    -- Number of vertical points
     countV = length [m | ((h, _), Just move) <- A.assocs b, move == m, h == x]
     -- We check both diagonals if x == y
     countD = length [m | ((h, w), Just move) <- A.assocs b, x == y, h == w, move == m]
@@ -62,6 +67,7 @@ checkBoard b m (x,y) =
         then Draw
         else Ongoing
 
+-- |Converts the abstract position to the string representation indices.
 posToCoord :: Pos -> (Int, Int)
 posToCoord (x, y) =
   let
@@ -90,11 +96,13 @@ printBoard b =
     (h, w) = (length blankDiagram, length (head blankDiagram))
     aDiagram :: Array (Int, Int) Char
     aDiagram = A.listArray ((1, 1), (h, w)) (concat blankDiagram)
---    game = A.assocs b
     justMoves = filter (isJust . snd) (A.assocs b)
+    -- The list of positions and X/O's
     moves = zip (fst <$> justMoves) (catMaybes $ snd <$> justMoves)
+    -- We create a list of IO prints to replace the right positions later.
     lstPrnts :: [[IO ()]]
     lstPrnts = map (map putChar) blankDiagram
+    -- Converting to an Array for easier indexing.
     aPrnts = A.listArray ((1, 1), (h, w)) (concat lstPrnts)
     -- Substitute the Xs and Os with colored versions
     colorize :: Move -> IO ()
@@ -123,6 +131,7 @@ fisherYates gen l =
     numerate = zip [1..]
     initial x gen = (M.singleton 0 x, gen)
 
+-- |Fills the board until the game is over, and returns the result and the first move in the sequence.
 simulate :: (RandomGen g) => Board -> g -> ((Status, Pos), g)
 simulate b g =
   let
@@ -141,6 +150,7 @@ simulate b g =
   in
     ((status, firstMove), g')
 
+-- |Counts the frequencies of each outcome for each next computer move.
 frequencies :: [(Status, Pos)] -> Map Status (Map Pos Double)
 frequencies lst =
   let
@@ -155,6 +165,7 @@ frequencies lst =
   in
     M.map (M.map (/ total)) counts
 
+-- |Returns the best move (highest probability) that either wins or draws the game.
 bestMove :: Map Status (Map Pos Double) -> Pos
 bestMove m =
   let
