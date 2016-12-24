@@ -14,4 +14,4 @@ isScary :: String -> Bool
 isScary word = countSum word == 13
 
 countSum :: String -> Int
-countSum = sum . map (\c -> ord c - ord 'a') . filter isAsciiLower . map toLower
+countSum = sum . map (\c -> ord c - ord 'a' + 1) . filter isAsciiLower . map toLower
