@@ -18,7 +18,7 @@ There's a contest going on in a Russian social network: seven prizes will be giv
 
 Calculate the answer by running a simulation some number of times (for instance, 10000 times). You can use [`System.Random`](https://hackage.haskell.org/package/random/docs/System-Random.html) or some other random library (e.g. [`Data.Random`](https://hackage.haskell.org/package/random-fu/docs/Data-Random.html)).
 
-If you're not good at probabilistic simulations, [here's a hint](HINTS.md#reposts).
+If you're not good at probabilistic simulations, [here's a hint](../HINTS.md#reposts).
 
 ### 3. Write a tic-tac-toe game `{tictactoe}`
 
@@ -120,6 +120,6 @@ S: I knew you didn't know. I don't know either.
 P: Now I know the numbers.  
 S: Now I know them too.
 
-Find A and B. If you can't, [here's a hint](HINTS.md#logic-brute).
+Find A and B. If you can't, [here's a hint](../HINTS.md#logic-brute).
 
 For more info on the topic, see Oleg Kiselyov's [“Representing knowledge about knowledge”](http://okmij.org/ftp/Algorithms.html#mr-s-p).
